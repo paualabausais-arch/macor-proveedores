@@ -3,1055 +3,1117 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="theme-color" content="#1a2744"/>
-<meta name="description" content="Gestión de Proveedores - Suministros Macor"/>
+<meta name="theme-color" content="#0f1923"/>
+<meta name="description" content="Macor · Suite Comercial"/>
 <link rel="manifest" href="manifest.json"/>
-<title>Macor · Proveedores</title>
+<title>Macor · Suite Comercial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
 <style>
-:root {
-  --primary: #1a2744;
-  --primary-light: #243460;
-  --accent: #e8a020;
-  --accent-light: #f5c05a;
-  --bg: #f4f5f8;
-  --surface: #ffffff;
-  --surface2: #f9fafb;
-  --border: #e2e6ef;
-  --text: #1a2744;
-  --text2: #5a6480;
-  --text3: #9aa0b4;
-  --green: #1e9d6e;
-  --red: #d94040;
-  --amber: #e8a020;
-  --radius: 12px;
-  --shadow: 0 2px 12px rgba(26,39,68,0.08);
-  --shadow-lg: 0 8px 32px rgba(26,39,68,0.14);
+:root{
+  --ink:#0f1923;--ink2:#2a3a4a;--ink3:#4a6070;--ink4:#8aa0b0;
+  --paper:#f5f3ef;--paper2:#ede9e3;--paper3:#e2ddd6;
+  --gold:#c8922a;--gold2:#e8b84a;--gold-bg:#fdf6e8;
+  --green:#1a7a4a;--green-bg:#e8f5ee;
+  --red:#c03030;--red-bg:#fdeaea;
+  --blue:#1a4a8a;--blue-bg:#e8eef8;
+  --amber:#d4760a;--amber-bg:#fef0d8;
+  --surface:#ffffff;
+  --border:#ddd8d0;--border2:#ccc8c0;
+  --r:10px;--r2:6px;
+  --shadow:0 1px 4px rgba(15,25,35,0.08),0 4px 16px rgba(15,25,35,0.06);
+  --shadow-lg:0 4px 24px rgba(15,25,35,0.14);
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body{font-family:var(--font);background:var(--paper);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.5;}
+button,input,select,textarea{font-family:var(--font);}
 
-/* ---- TOPBAR ---- */
-.topbar{background:var(--primary);color:#fff;padding:0 1.5rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
-.topbar-brand{display:flex;align-items:center;gap:10px;font-size:1.1rem;font-weight:700;letter-spacing:-0.3px;}
-.topbar-brand span{color:var(--accent);}
-.topbar-logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:var(--primary);}
-.topbar-actions{display:flex;gap:8px;align-items:center;}
-.btn-icon{background:rgba(255,255,255,0.1);border:none;color:#fff;width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:background 0.15s;}
-.btn-icon:hover{background:rgba(255,255,255,0.2);}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
 
-/* ---- NAV TABS ---- */
-.nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;}
-.nav::-webkit-scrollbar{display:none;}
-.nav-tab{padding:0 1.25rem;height:48px;display:flex;align-items:center;gap:8px;font-size:0.875rem;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.15s;flex-shrink:0;}
-.nav-tab:hover{color:var(--text);}
-.nav-tab.active{color:var(--primary);border-bottom-color:var(--accent);}
-.nav-tab svg{width:16px;height:16px;}
+/* LAYOUT */
+.app-shell{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:220px;background:var(--ink);flex-shrink:0;display:flex;flex-direction:column;overflow-y:auto;}
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.25rem;gap:1rem;flex-shrink:0;}
+.content{flex:1;overflow-y:auto;padding:1.5rem;}
 
-/* ---- MAIN ---- */
-.main{max-width:1200px;margin:0 auto;padding:1.5rem;}
+/* SIDEBAR */
+.sidebar-brand{padding:1.25rem 1rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;}
+.brand-logo{width:34px;height:34px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--ink);flex-shrink:0;}
+.brand-text{color:#fff;font-weight:600;font-size:0.95rem;line-height:1.2;}
+.brand-sub{color:rgba(255,255,255,0.4);font-size:0.7rem;font-weight:400;}
+.sidebar-section{padding:1rem 0.75rem 0.25rem;font-size:0.65rem;font-weight:600;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:0.55rem 0.875rem;margin:1px 0.5rem;border-radius:var(--r2);cursor:pointer;color:rgba(255,255,255,0.55);font-size:0.85rem;font-weight:400;transition:all 0.15s;}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.85);}
+.nav-item.active{background:rgba(200,146,42,0.18);color:var(--gold2);}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:0.8;}
+.nav-item.active svg{opacity:1;}
+.nav-badge{margin-left:auto;background:var(--gold);color:var(--ink);font-size:0.65rem;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center;}
+.sidebar-bottom{margin-top:auto;padding:0.75rem;border-top:1px solid rgba(255,255,255,0.08);}
+.sync-pill{display:flex;align-items:center;gap:6px;padding:0.5rem 0.75rem;border-radius:var(--r2);background:rgba(255,255,255,0.05);font-size:0.75rem;color:rgba(255,255,255,0.4);}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:#4a6070;flex-shrink:0;transition:background 0.3s;}
+.sync-dot.ok{background:#1a7a4a;}
+.sync-dot.err{background:#c03030;}
 
-/* ---- CARDS ---- */
-.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:1.25rem;}
-.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
-.card-title{font-size:1rem;font-weight:600;color:var(--text);}
+/* TOPBAR */
+.topbar-title{font-weight:600;font-size:1rem;color:var(--ink);}
+.topbar-sub{font-size:0.78rem;color:var(--ink4);margin-left:4px;}
+.topbar-spacer{flex:1;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:0 0.875rem;height:34px;border-radius:var(--r2);font-size:0.82rem;font-weight:500;cursor:pointer;transition:all 0.15s;border:1px solid transparent;}
+.btn-primary{background:var(--ink);color:#fff;}
+.btn-primary:hover{background:var(--ink2);}
+.btn-gold{background:var(--gold);color:#fff;font-weight:600;}
+.btn-gold:hover{background:var(--gold2);}
+.btn-ghost{background:transparent;color:var(--ink3);border-color:var(--border);}
+.btn-ghost:hover{background:var(--paper2);color:var(--ink);}
+.btn-danger{background:var(--red-bg);color:var(--red);border-color:#f5c0c0;}
+.btn-danger:hover{background:#fbd8d8;}
+.btn-sm{height:28px;padding:0 0.65rem;font-size:0.78rem;}
+.btn-xs{height:24px;padding:0 0.5rem;font-size:0.72rem;}
 
-/* ---- STATS GRID ---- */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;}
-.stat{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:1rem 1.25rem;}
-.stat-label{font-size:0.75rem;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem;}
-.stat-value{font-size:1.75rem;font-weight:700;color:var(--text);}
-.stat-sub{font-size:0.75rem;color:var(--text2);margin-top:2px;}
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;}
+.card-sm{padding:1rem;}
+.card-title{font-size:0.82rem;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem;}
 
-/* ---- BUTTONS ---- */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:0 1rem;height:36px;border-radius:8px;font-size:0.875rem;font-weight:500;cursor:pointer;transition:all 0.15s;border:1px solid transparent;text-decoration:none;}
-.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary);}
-.btn-primary:hover{background:var(--primary-light);}
-.btn-accent{background:var(--accent);color:var(--primary);border-color:var(--accent);font-weight:600;}
-.btn-accent:hover{background:var(--accent-light);}
-.btn-ghost{background:transparent;color:var(--text2);border-color:var(--border);}
-.btn-ghost:hover{background:var(--surface2);color:var(--text);}
-.btn-danger{background:#fff0f0;color:var(--red);border-color:#fdd;}
-.btn-danger:hover{background:#ffe4e4;}
-.btn-sm{height:30px;padding:0 0.75rem;font-size:0.8rem;}
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+@media(max-width:900px){.grid-4{grid-template-columns:1fr 1fr;}.grid-3{grid-template-columns:1fr 1fr;}.sidebar{width:200px;}}
+@media(max-width:640px){.app-shell{flex-direction:column;}.sidebar{width:100%;height:auto;flex-direction:row;overflow-x:auto;}.sidebar-brand{display:none;}.sidebar-section{display:none;}.sidebar-bottom{display:none;}.nav-item{flex-direction:column;gap:3px;font-size:0.65rem;padding:0.5rem;white-space:nowrap;}.nav-badge{display:none;}.content{padding:1rem;}.grid-4{grid-template-columns:1fr 1fr;}.grid-3{grid-template-columns:1fr;}.grid-2{grid-template-columns:1fr;}}
 
-/* ---- TABLE ---- */
-.table-wrap{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;font-size:0.875rem;}
-thead th{padding:0.625rem 0.875rem;text-align:left;font-size:0.75rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);background:var(--surface2);}
+/* KPI */
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.25rem;}
+.kpi-label{font-size:0.72rem;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.375rem;}
+.kpi-value{font-size:1.75rem;font-weight:700;color:var(--ink);line-height:1;}
+.kpi-sub{font-size:0.75rem;color:var(--ink4);margin-top:4px;}
+.kpi-trend{display:inline-flex;align-items:center;gap:3px;font-size:0.72rem;font-weight:600;padding:1px 6px;border-radius:4px;}
+.kpi-trend.up{background:var(--green-bg);color:var(--green);}
+.kpi-trend.down{background:var(--red-bg);color:var(--red);}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:0.72rem;font-weight:600;}
+.badge-green{background:var(--green-bg);color:var(--green);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);}
+.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-blue{background:var(--blue-bg);color:var(--blue);}
+.badge-gray{background:var(--paper2);color:var(--ink3);}
+.badge-gold{background:var(--gold-bg);color:var(--gold);}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;margin:-1px;}
+table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+thead th{padding:0.5rem 0.75rem;text-align:left;font-size:0.68rem;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);background:var(--paper);white-space:nowrap;}
 tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
-tbody tr:hover{background:var(--surface2);}
-tbody td{padding:0.75rem 0.875rem;color:var(--text);}
+tbody tr:hover{background:var(--paper);}
 tbody tr:last-child{border-bottom:none;}
+tbody td{padding:0.65rem 0.75rem;color:var(--ink);vertical-align:middle;}
 
-/* ---- BADGES ---- */
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600;}
-.badge-green{background:#e6f7f1;color:#0d7a54;}
-.badge-amber{background:#fff5e0;color:#8a5c00;}
-.badge-red{background:#ffeaea;color:#a82a2a;}
-.badge-blue{background:#e6f0fb;color:#1558a5;}
-.badge-gray{background:var(--surface2);color:var(--text2);}
-
-/* ---- SCORE BAR ---- */
-.score-bar{display:flex;align-items:center;gap:8px;}
-.score-bar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
-.score-bar-fill{height:100%;border-radius:3px;transition:width 0.3s;}
-
-/* ---- MODAL ---- */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity 0.2s;}
-.modal-overlay.open{opacity:1;pointer-events:all;}
-.modal{background:var(--surface);border-radius:var(--radius);width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
-.modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
-.modal-header h2{font-size:1rem;font-weight:600;}
-.modal-body{padding:1.5rem;}
-.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;}
-
-/* ---- FORM ---- */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
-@media(max-width:560px){.form-grid{grid-template-columns:1fr;}}
-.form-group{display:flex;flex-direction:column;gap:4px;}
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.875rem;}
+.form-group{display:flex;flex-direction:column;gap:3px;}
 .form-group.full{grid-column:1/-1;}
-label{font-size:0.8rem;font-weight:500;color:var(--text2);}
-input,select,textarea{width:100%;padding:0 0.75rem;height:38px;border:1px solid var(--border);border-radius:8px;font-size:0.875rem;color:var(--text);background:var(--surface);transition:border-color 0.15s;outline:none;font-family:inherit;}
-textarea{height:80px;padding:0.625rem 0.75rem;resize:vertical;}
-input:focus,select:focus,textarea:focus{border-color:var(--accent);}
-.section-divider{grid-column:1/-1;font-size:0.8rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;padding-top:0.5rem;border-top:1px solid var(--border);margin-top:0.5rem;}
+.form-section{grid-column:1/-1;font-size:0.7rem;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:0.5px;padding-top:0.5rem;border-top:1px solid var(--border);margin-top:0.25rem;}
+label{font-size:0.75rem;font-weight:500;color:var(--ink3);}
+input,select,textarea{width:100%;padding:0 0.75rem;height:36px;border:1px solid var(--border);border-radius:var(--r2);font-size:0.85rem;color:var(--ink);background:var(--surface);transition:border-color 0.15s;outline:none;}
+textarea{height:70px;padding:0.5rem 0.75rem;resize:vertical;}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);}
+input[type=range]{height:auto;padding:0;border:none;background:none;accent-color:var(--gold);}
+@media(max-width:560px){.form-grid{grid-template-columns:1fr;}}
 
-/* ---- SEARCH & FILTERS ---- */
-.toolbar{display:flex;gap:0.75rem;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center;}
-.search-box{flex:1;min-width:200px;position:relative;}
-.search-box input{padding-left:2.25rem;}
-.search-box svg{position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text3);}
-.filter-select{height:38px;padding:0 0.75rem;border:1px solid var(--border);border-radius:8px;font-size:0.875rem;color:var(--text);background:var(--surface);cursor:pointer;}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(15,25,35,0.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity 0.2s;backdrop-filter:blur(2px);}
+.overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--surface);border-radius:var(--r);width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
+.modal-lg{max-width:860px;}
+.modal-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+.modal-header h2{font-size:0.95rem;font-weight:600;}
+.modal-body{padding:1.25rem;}
+.modal-footer{padding:0.875rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;}
+.close-btn{width:30px;height:30px;border:none;background:var(--paper2);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:16px;transition:background 0.15s;}
+.close-btn:hover{background:var(--paper3);}
 
-/* ---- RANKING VIEW ---- */
-.ranking-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;}
-.weight-control{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;}
-.weight-label{font-size:0.8rem;font-weight:600;color:var(--text2);margin-bottom:0.5rem;display:flex;justify-content:space-between;}
-.weight-label span{color:var(--primary);font-weight:700;}
-input[type=range]{width:100%;accent-color:var(--accent);}
+/* SCORE BAR */
+.score-bar{display:flex;align-items:center;gap:6px;}
+.score-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.score-fill{height:100%;border-radius:3px;}
 
-/* ---- RANKING CARD ---- */
-.rank-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;transition:box-shadow 0.15s;}
-.rank-card:hover{box-shadow:var(--shadow);}
-.rank-card.rank-1{border-color:var(--accent);background:#fffdf4;}
-.rank-number{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;flex-shrink:0;}
-.rank-1 .rank-number{background:var(--accent);color:var(--primary);}
-.rank-2 .rank-number{background:#e8edf5;color:var(--primary);}
-.rank-3 .rank-number{background:#f0ece6;color:#7a5000;}
-.rank-other .rank-number{background:var(--surface2);color:var(--text2);}
-.rank-info{flex:1;min-width:0;}
-.rank-name{font-weight:600;font-size:0.95rem;}
-.rank-meta{font-size:0.8rem;color:var(--text2);margin-top:2px;}
-.rank-score-big{font-size:1.5rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+/* PRIORITY DOT */
+.prio-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 
-/* ---- COMPARE ---- */
-.compare-grid{display:grid;gap:1rem;}
-.cmp-row{display:grid;gap:0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
-.cmp-cell{padding:0.625rem 0.875rem;font-size:0.875rem;border-right:1px solid var(--border);}
-.cmp-cell:last-child{border-right:none;}
-.cmp-head{background:var(--primary);color:#fff;font-weight:600;font-size:0.8rem;}
-.cmp-label{background:var(--surface2);font-weight:500;color:var(--text2);font-size:0.8rem;}
-.cmp-best{background:#e6f7f1;}
+/* AVATAR */
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
 
-/* ---- EMPTY ---- */
-.empty{text-align:center;padding:3rem 1rem;color:var(--text3);}
-.empty svg{margin:0 auto 1rem;display:block;opacity:0.3;}
-.empty p{font-size:0.9rem;}
+/* ACTIVITY ROW */
+.activity-row{display:flex;align-items:flex-start;gap:10px;padding:0.625rem 0;border-bottom:1px solid var(--border);}
+.activity-row:last-child{border-bottom:none;}
+.activity-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px;}
 
-/* ---- TOAST ---- */
-.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--primary);color:#fff;padding:0.75rem 1.25rem;border-radius:10px;font-size:0.875rem;font-weight:500;z-index:300;transform:translateY(80px);opacity:0;transition:all 0.3s;pointer-events:none;}
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;padding:0.65rem 1rem;border-radius:var(--r);font-size:0.82rem;font-weight:500;z-index:300;transform:translateY(60px);opacity:0;transition:all 0.25s;pointer-events:none;max-width:320px;}
 .toast.show{transform:translateY(0);opacity:1;}
-.toast.success{background:var(--green);}
-.toast.error{background:var(--red);}
+.toast.ok{background:var(--green);}
+.toast.err{background:var(--red);}
 
-/* ---- MOBILE ---- */
-@media(max-width:600px){
-  .main{padding:1rem;}
-  .stats-grid{grid-template-columns:1fr 1fr;}
-  .topbar{padding:0 1rem;}
-  .modal-body{padding:1rem;}
-  .form-grid{gap:0.75rem;}
-}
+/* EMPTY */
+.empty{text-align:center;padding:3rem 1rem;color:var(--ink4);}
 
-/* ---- LOADING ---- */
-.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:2rem;color:var(--text2);}
-.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.6s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
+/* CALC */
+.calc-result{background:var(--ink);color:#fff;border-radius:var(--r);padding:1.25rem;text-align:center;}
+.calc-big{font-size:2.5rem;font-weight:700;color:var(--gold2);line-height:1;}
+.calc-label{font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:4px;}
 
-/* ---- CONFIG SCREEN ---- */
-.config-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:var(--bg);}
-.config-box{background:var(--surface);border-radius:16px;border:1px solid var(--border);padding:2.5rem;max-width:480px;width:100%;box-shadow:var(--shadow-lg);}
-.config-logo{width:56px;height:56px;background:var(--primary);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;}
-.config-logo span{font-size:22px;font-weight:900;color:var(--accent);}
+/* TABS (inline) */
+.tabs{display:flex;gap:2px;background:var(--paper2);border-radius:var(--r2);padding:3px;margin-bottom:1.25rem;}
+.tab{flex:1;padding:0.4rem 0.75rem;border-radius:4px;text-align:center;cursor:pointer;font-size:0.8rem;font-weight:500;color:var(--ink3);transition:all 0.15s;}
+.tab.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+
+/* PROGRESS */
+.progress{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:2px;transition:width 0.4s;}
+
+/* CONFIG SCREEN */
+.config-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:var(--ink);}
+.config-box{background:var(--surface);border-radius:16px;padding:2.5rem;max-width:460px;width:100%;box-shadow:var(--shadow-lg);}
+
+/* SEGUIMIENTO TAG */
+.next-contact{display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;padding:2px 7px;border-radius:4px;font-weight:500;}
+.next-contact.hoy{background:var(--red-bg);color:var(--red);}
+.next-contact.pronto{background:var(--amber-bg);color:var(--amber);}
+.next-contact.ok{background:var(--green-bg);color:var(--green);}
+.next-contact.nunca{background:var(--paper2);color:var(--ink4);}
+
+/* STARS */
+.stars{display:inline-flex;gap:1px;}
+.star{font-size:11px;}
+
+/* OFERTA STATUS */
+.oferta-status{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:0.72rem;font-weight:600;}
 </style>
 </head>
 <body>
 
-<!-- Config screen (shown if no Firebase config) -->
+<!-- CONFIG SCREEN -->
 <div id="config-screen" class="config-screen" style="display:none;">
   <div class="config-box">
-    <div class="config-logo"><span>M</span></div>
-    <h1 style="text-align:center;font-size:1.25rem;margin-bottom:0.5rem;">Configuración inicial</h1>
-    <p style="text-align:center;color:var(--text2);font-size:0.875rem;margin-bottom:2rem;">Pega aquí la configuración de Firebase para activar la sincronización</p>
-    <div class="form-group" style="margin-bottom:1rem;">
-      <label>API Key</label>
-      <input id="cfg-apiKey" placeholder="AIzaSy..." />
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;">
+      <div style="width:44px;height:44px;background:var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center;"><span style="font-size:20px;font-weight:700;color:var(--gold);">M</span></div>
+      <div><div style="font-size:1.1rem;font-weight:700;">Macor Suite Comercial</div><div style="font-size:0.8rem;color:var(--ink3);">Configuración inicial</div></div>
     </div>
-    <div class="form-group" style="margin-bottom:1rem;">
-      <label>Auth Domain</label>
-      <input id="cfg-authDomain" placeholder="tu-proyecto.firebaseapp.com" />
-    </div>
-    <div class="form-group" style="margin-bottom:1rem;">
-      <label>Project ID</label>
-      <input id="cfg-projectId" placeholder="tu-proyecto" />
-    </div>
-    <div class="form-group" style="margin-bottom:1.5rem;">
-      <label>App ID</label>
-      <input id="cfg-appId" placeholder="1:123456:web:abc..." />
-    </div>
-    <button class="btn btn-accent" style="width:100%;justify-content:center;" onclick="saveConfig()">Guardar y conectar</button>
-    <p style="text-align:center;margin-top:1rem;font-size:0.8rem;color:var(--text3);">
-      <a href="#" onclick="useDemo()" style="color:var(--primary);">Usar modo demo (sin guardar)</a>
-    </p>
+    <p style="font-size:0.85rem;color:var(--ink3);margin-bottom:1.5rem;">Introduce los datos de Firebase para activar la sincronización entre dispositivos.</p>
+    <div class="form-group" style="margin-bottom:0.75rem;"><label>API Key</label><input id="cfg-apiKey" placeholder="AIzaSy..."/></div>
+    <div class="form-group" style="margin-bottom:0.75rem;"><label>Auth Domain</label><input id="cfg-authDomain" placeholder="tu-proyecto.firebaseapp.com"/></div>
+    <div class="form-group" style="margin-bottom:0.75rem;"><label>Project ID</label><input id="cfg-projectId" placeholder="tu-proyecto"/></div>
+    <div class="form-group" style="margin-bottom:1.5rem;"><label>App ID</label><input id="cfg-appId" placeholder="1:123456:web:abc..."/></div>
+    <button class="btn btn-gold" style="width:100%;justify-content:center;height:40px;" onclick="saveConfig()">Guardar y conectar</button>
+    <p style="text-align:center;margin-top:1rem;font-size:0.78rem;color:var(--ink4);"><a href="#" onclick="useDemo()" style="color:var(--blue);">Usar modo demo (sin Firebase)</a></p>
   </div>
 </div>
 
-<!-- App -->
-<div id="app" style="display:none;">
-  <div class="topbar">
-    <div class="topbar-brand">
-      <div class="topbar-logo">M</div>
-      Macor <span>·&nbsp;Proveedores</span>
-    </div>
-    <div class="topbar-actions">
-      <span id="sync-indicator" style="font-size:0.75rem;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:4px;">
-        <span id="sync-dot" style="width:7px;height:7px;border-radius:50%;background:#9aa0b4;display:inline-block;"></span>
-        <span id="sync-text">Conectando…</span>
-      </span>
-    </div>
-  </div>
+<!-- APP -->
+<div id="app" class="app-shell" style="display:none;">
 
-  <div class="nav">
-    <div class="nav-tab active" onclick="showTab('lista')" id="tab-lista">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-      Lista
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">M</div>
+      <div><div class="brand-text">Macor</div><div class="brand-sub">Suite Comercial</div></div>
     </div>
-    <div class="nav-tab" onclick="showTab('ranking')" id="tab-ranking">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+
+    <div class="sidebar-section">Principal</div>
+    <div class="nav-item active" id="nav-dashboard" onclick="goTo('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+      <span class="nav-badge" id="badge-dashboard" style="display:none;">0</span>
+    </div>
+
+    <div class="sidebar-section">Comercial</div>
+    <div class="nav-item" id="nav-clientes" onclick="goTo('clientes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Clientes
+    </div>
+    <div class="nav-item" id="nav-ofertas" onclick="goTo('ofertas')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Ofertas
+      <span class="nav-badge" id="badge-ofertas" style="display:none;">0</span>
+    </div>
+    <div class="nav-item" id="nav-calculadora" onclick="goTo('calculadora')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/></svg>
+      Calculadora
+    </div>
+
+    <div class="sidebar-section">Compras</div>
+    <div class="nav-item" id="nav-proveedores" onclick="goTo('proveedores')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Proveedores
+    </div>
+    <div class="nav-item" id="nav-ranking" onclick="goTo('ranking')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
       Ranking
     </div>
-    <div class="nav-tab" onclick="showTab('comparar')" id="tab-comparar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
-      Comparar
+
+    <div class="sidebar-bottom">
+      <div class="sync-pill"><div class="sync-dot" id="sync-dot"></div><span id="sync-text" style="flex:1;">Conectando…</span></div>
     </div>
-    <div class="nav-tab" onclick="showTab('estadisticas')" id="tab-estadisticas">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>
-      Estadísticas
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-area">
+    <div class="topbar">
+      <div>
+        <span class="topbar-title" id="topbar-title">Dashboard</span>
+        <span class="topbar-sub" id="topbar-sub"></span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div id="topbar-actions"></div>
+    </div>
+
+    <div class="content" id="content">
+      <div class="empty">Cargando…</div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-overlay"><div class="modal" id="modal-box"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let db = null, demoMode = false;
+let proveedores=[], clientes=[], ofertas=[], pedidos=[], actividad=[];
+let currentView = 'dashboard';
+
+// Ranking weights
+let W = JSON.parse(localStorage.getItem('macor_w')||'null') || {margen:30,entrega:25,fiabilidad:25,calidad:20};
+
+// ══════════════════════════════════════
+// FIREBASE / DEMO BOOT
+// ══════════════════════════════════════
+function getSavedCfg(){ try{return JSON.parse(localStorage.getItem('macor_fb')||'null');}catch{return null;} }
+function saveConfig(){
+  const cfg={apiKey:ge('cfg-apiKey').value.trim(),authDomain:ge('cfg-authDomain').value.trim(),projectId:ge('cfg-projectId').value.trim(),appId:ge('cfg-appId').value.trim()};
+  if(!cfg.apiKey||!cfg.projectId){toast('Completa al menos API Key y Project ID','err');return;}
+  localStorage.setItem('macor_fb',JSON.stringify(cfg)); initFirebase(cfg);
+}
+function useDemo(){
+  demoMode=true; loadDemoData();
+  ge('config-screen').style.display='none'; ge('app').style.display='flex';
+  setSyncStatus('demo'); initApp();
+}
+function initFirebase(cfg){
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(cfg);
+    db=firebase.firestore();
+    ge('config-screen').style.display='none'; ge('app').style.display='flex';
+    setSyncStatus('ok'); initApp();
+  }catch(e){toast('Error Firebase: '+e.message,'err');}
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  const cfg=getSavedCfg();
+  if(cfg?.apiKey){ ge('app').style.display='flex'; initFirebase(cfg); }
+  else ge('config-screen').style.display='flex';
+});
+
+function setSyncStatus(s){
+  const dot=ge('sync-dot'), txt=ge('sync-text');
+  if(s==='ok'){dot.className='sync-dot ok';txt.textContent='Sincronizado';}
+  else if(s==='err'){dot.className='sync-dot err';txt.textContent='Error sync';}
+  else if(s==='demo'){dot.className='sync-dot';dot.style.background='#c8922a';txt.textContent='Modo demo';}
+  else{dot.className='sync-dot';txt.textContent='Conectando…';}
+}
+
+// ══════════════════════════════════════
+// FIRESTORE LISTENERS
+// ══════════════════════════════════════
+function initApp(){
+  if(demoMode){ refreshAll(); goTo('dashboard'); return; }
+  db.collection('proveedores').onSnapshot(s=>{proveedores=s.docs.map(d=>({id:d.id,...d.data()}));refreshAll();});
+  db.collection('clientes').onSnapshot(s=>{clientes=s.docs.map(d=>({id:d.id,...d.data()}));refreshAll();});
+  db.collection('ofertas').onSnapshot(s=>{ofertas=s.docs.map(d=>({id:d.id,...d.data()}));refreshAll();});
+  goTo('dashboard');
+}
+function refreshAll(){
+  updateBadges();
+  if(currentView) renderView(currentView);
+}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+const VIEW_META={
+  dashboard:{title:'Dashboard',sub:'Buenos días — resumen de hoy'},
+  clientes:{title:'Clientes',sub:'Gestión y seguimiento'},
+  ofertas:{title:'Ofertas',sub:'Pipeline comercial'},
+  calculadora:{title:'Calculadora de margen',sub:'Calcula precios al instante'},
+  proveedores:{title:'Proveedores',sub:'Gestión de proveedores'},
+  ranking:{title:'Ranking de proveedores',sub:'Compara y elige el mejor'},
+};
+function goTo(view){
+  currentView=view;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const ni=ge('nav-'+view); if(ni) ni.classList.add('active');
+  const m=VIEW_META[view]||{title:view,sub:''};
+  ge('topbar-title').textContent=m.title;
+  ge('topbar-sub').textContent=m.sub;
+  renderView(view);
+}
+function renderView(view){
+  const map={dashboard:renderDashboard,clientes:renderClientes,ofertas:renderOfertas,calculadora:renderCalculadora,proveedores:renderProveedores,ranking:renderRanking};
+  const fn=map[view]; if(fn) fn();
+}
+
+// ══════════════════════════════════════
+// BADGES
+// ══════════════════════════════════════
+function updateBadges(){
+  // Clientes que tocan hoy o están vencidos
+  const hoy=clientes.filter(c=>contactStatus(c)==='hoy'||contactStatus(c)==='vencido').length;
+  // Ofertas pendientes
+  const opend=ofertas.filter(o=>o.estado==='enviada'||o.estado==='pendiente').length;
+  const total=hoy+opend;
+  setBadge('dashboard',total);
+  setBadge('ofertas',opend);
+}
+function setBadge(id,n){
+  const el=ge('badge-'+id); if(!el) return;
+  el.style.display=n>0?'':'none'; el.textContent=n;
+}
+
+// ══════════════════════════════════════
+// ═══════ DASHBOARD ═══════════════════
+// ══════════════════════════════════════
+function renderDashboard(){
+  ge('topbar-actions').innerHTML='';
+  const hoy=new Date();
+  const clientesToday=clientes.filter(c=>contactStatus(c)==='hoy'||contactStatus(c)==='vencido').sort((a,b)=>(a.proximoContacto||'').localeCompare(b.proximoContacto||''));
+  const ofertasPend=ofertas.filter(o=>o.estado==='enviada'||o.estado==='pendiente').sort((a,b)=>new Date(a.fecha||0)-new Date(b.fecha||0));
+  const margenMedio=ofertas.filter(o=>o.estado==='ganada'&&o.margen).reduce((s,o,_,a)=>s+o.margen/a.length,0);
+  const ventasMes=ofertas.filter(o=>o.estado==='ganada'&&isThisMonth(o.fecha)).reduce((s,o)=>s+(o.importeVenta||0),0);
+  const tasaExito=ofertas.length?Math.round(ofertas.filter(o=>o.estado==='ganada').length/ofertas.filter(o=>['ganada','perdida'].includes(o.estado)).length*100)||0:0;
+  const provActivos=proveedores.filter(p=>p.estado!=='inactivo').length;
+
+  ge('content').innerHTML=`
+  <div class="grid-4" style="margin-bottom:1.25rem;">
+    <div class="kpi"><div class="kpi-label">Clientes activos</div><div class="kpi-value">${clientes.length}</div><div class="kpi-sub">${clientesToday.length} tocan hoy</div></div>
+    <div class="kpi"><div class="kpi-label">Ofertas en curso</div><div class="kpi-value">${ofertasPend.length}</div><div class="kpi-sub">${ofertas.filter(o=>o.estado==='ganada').length} ganadas total</div></div>
+    <div class="kpi"><div class="kpi-label">Ventas este mes</div><div class="kpi-value">${fmt(ventasMes)}</div><div class="kpi-sub">Tasa de éxito: ${tasaExito}%</div></div>
+    <div class="kpi"><div class="kpi-label">Margen medio</div><div class="kpi-value">${margenMedio?margenMedio.toFixed(1)+'%':'—'}</div><div class="kpi-sub">${provActivos} proveedores activos</div></div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.25rem;">
+    <div class="card card-sm">
+      <div class="card-title">📞 Llamar hoy <span style="font-weight:400;color:var(--ink4);">(${clientesToday.length})</span></div>
+      ${clientesToday.length===0?`<div class="empty" style="padding:1.5rem;"><p>¡Todo al día! No hay seguimientos pendientes.</p></div>`:''}
+      ${clientesToday.slice(0,6).map(c=>{
+        const st=contactStatus(c);
+        return `<div class="activity-row" style="cursor:pointer;" onclick="abrirCliente('${c.id}')">
+          <div class="avatar" style="background:${avatarColor(c.nombre)};color:#fff;">${initials(c.nombre)}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:500;font-size:0.85rem;">${esc(c.nombre)}</div>
+            <div style="font-size:0.75rem;color:var(--ink4);">${esc(c.empresa||c.tipo||'')}</div>
+          </div>
+          <span class="next-contact ${st==='vencido'?'hoy':st}">${st==='vencido'?'Vencido':st==='hoy'?'Hoy':''}</span>
+        </div>`;
+      }).join('')}
+      ${clientesToday.length>6?`<div style="text-align:center;padding:0.5rem;"><button class="btn btn-ghost btn-sm" onclick="goTo('clientes')">Ver todos (${clientesToday.length})</button></div>`:''}
+    </div>
+
+    <div class="card card-sm">
+      <div class="card-title">📋 Ofertas pendientes de respuesta <span style="font-weight:400;color:var(--ink4);">(${ofertasPend.length})</span></div>
+      ${ofertasPend.length===0?`<div class="empty" style="padding:1.5rem;"><p>Sin ofertas pendientes.</p></div>`:''}
+      ${ofertasPend.slice(0,5).map(o=>{
+        const diasEspera=o.fecha?Math.round((Date.now()-new Date(o.fecha))/(86400000)):0;
+        const cliente=clientes.find(c=>c.id===o.clienteId);
+        return `<div class="activity-row" style="cursor:pointer;" onclick="abrirOferta('${o.id}')">
+          <div class="activity-icon" style="background:${diasEspera>14?'var(--red-bg)':diasEspera>7?'var(--amber-bg)':'var(--blue-bg)'};">
+            ${diasEspera>14?'🔴':diasEspera>7?'🟡':'📄'}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:500;font-size:0.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(o.titulo||'Sin título')}</div>
+            <div style="font-size:0.75rem;color:var(--ink4);">${cliente?esc(cliente.nombre):''} · ${fmt(o.importeVenta||0)}</div>
+          </div>
+          <span style="font-size:0.72rem;color:var(--ink4);flex-shrink:0;">${diasEspera}d</span>
+        </div>`;
+      }).join('')}
+      ${ofertasPend.length>5?`<div style="text-align:center;padding:0.5rem;"><button class="btn btn-ghost btn-sm" onclick="goTo('ofertas')">Ver todas</button></div>`:''}
     </div>
   </div>
 
-  <div class="main">
-
-    <!-- ====== LISTA ====== -->
-    <div id="view-lista">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
-        <div>
-          <h1 style="font-size:1.25rem;font-weight:700;">Proveedores</h1>
-          <p style="font-size:0.875rem;color:var(--text2);margin-top:2px;" id="provider-count">Cargando…</p>
-        </div>
-        <button class="btn btn-accent" onclick="openModal()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          Nuevo proveedor
-        </button>
-      </div>
-
-      <div class="toolbar">
-        <div class="search-box">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" placeholder="Buscar por nombre, categoría…" id="search-input" oninput="renderLista()"/>
-        </div>
-        <select class="filter-select" id="filter-categoria" onchange="renderLista()">
-          <option value="">Todas las categorías</option>
-        </select>
-        <select class="filter-select" id="sort-by" onchange="renderLista()">
-          <option value="nombre">Ordenar: Nombre</option>
-          <option value="precio">Ordenar: Precio</option>
-          <option value="entrega">Ordenar: Entrega</option>
-          <option value="margen">Ordenar: Margen</option>
-          <option value="valoracion">Ordenar: Valoración</option>
-        </select>
-      </div>
-
-      <div class="card" style="padding:0;overflow:hidden;">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Proveedor</th>
-                <th>Categoría</th>
-                <th>Precio medio</th>
-                <th>Entrega</th>
-                <th>Margen %</th>
-                <th>Pago</th>
-                <th>Fiabilidad</th>
-                <th>Score</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="lista-tbody">
-              <tr><td colspan="9"><div class="loading"><div class="spinner"></div> Cargando…</div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+  <div class="card card-sm">
+    <div class="card-title">⚡ Acceso rápido</div>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+      <button class="btn btn-gold" onclick="abrirNuevoCliente()">+ Nuevo cliente</button>
+      <button class="btn btn-primary" onclick="abrirNuevaOferta()">+ Nueva oferta</button>
+      <button class="btn btn-ghost" onclick="goTo('calculadora')">🧮 Calcular margen</button>
+      <button class="btn btn-ghost" onclick="goTo('proveedores')">+ Nuevo proveedor</button>
     </div>
+  </div>`;
+}
 
-    <!-- ====== RANKING ====== -->
-    <div id="view-ranking" style="display:none;">
-      <div style="margin-bottom:1.5rem;">
-        <h1 style="font-size:1.25rem;font-weight:700;">Ranking inteligente</h1>
-        <p style="font-size:0.875rem;color:var(--text2);margin-top:2px;">Ajusta los pesos según lo que más te importe. El ranking se actualiza en tiempo real.</p>
-      </div>
+// ══════════════════════════════════════
+// ═══════ CLIENTES ═════════════════════
+// ══════════════════════════════════════
+function renderClientes(){
+  ge('topbar-actions').innerHTML=`<button class="btn btn-gold" onclick="abrirNuevoCliente()">+ Nuevo cliente</button>`;
+  const q=(ge('q-clientes')||{value:''}).value?.toLowerCase()||'';
+  const filtro=(ge('filtro-clientes')||{value:''}).value||'';
+  let list=[...clientes];
+  if(q) list=list.filter(c=>`${c.nombre} ${c.empresa} ${c.telefono} ${c.email}`.toLowerCase().includes(q));
+  if(filtro==='hoy') list=list.filter(c=>['hoy','vencido'].includes(contactStatus(c)));
+  if(filtro==='empresa') list=list.filter(c=>c.tipo==='empresa');
+  if(filtro==='particular') list=list.filter(c=>c.tipo==='particular');
+  list.sort((a,b)=>{
+    const sa=contactStatus(a),sb=contactStatus(b);
+    const order={vencido:0,hoy:1,pronto:2,ok:3,nunca:4};
+    return (order[sa]||5)-(order[sb]||5)||a.nombre.localeCompare(b.nombre);
+  });
 
-      <div class="ranking-controls" id="weight-controls"></div>
-
-      <div id="ranking-list" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
+  ge('content').innerHTML=`
+  <div style="display:flex;gap:0.75rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+    <div style="position:relative;flex:1;min-width:200px;">
+      <svg style="position:absolute;left:0.6rem;top:50%;transform:translateY(-50%);color:var(--ink4);" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input style="padding-left:2rem;" type="text" placeholder="Buscar cliente…" id="q-clientes" value="${q}" oninput="renderClientes()"/>
     </div>
-
-    <!-- ====== COMPARAR ====== -->
-    <div id="view-comparar" style="display:none;">
-      <div style="margin-bottom:1.5rem;">
-        <h1 style="font-size:1.25rem;font-weight:700;">Comparar proveedores</h1>
-        <p style="font-size:0.875rem;color:var(--text2);margin-top:2px;">Selecciona 2 o más proveedores para ver una comparativa detallada.</p>
-      </div>
-      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;" id="compare-selector"></div>
-      <div id="compare-table"></div>
+    <select id="filtro-clientes" onchange="renderClientes()" style="height:36px;min-width:160px;">
+      <option value="">Todos los clientes</option>
+      <option value="hoy" ${filtro==='hoy'?'selected':''}>Tocan hoy</option>
+      <option value="empresa" ${filtro==='empresa'?'selected':''}>Empresas</option>
+      <option value="particular" ${filtro==='particular'?'selected':''}>Particulares</option>
+    </select>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Cliente</th><th>Tipo</th><th>Teléfono</th><th>Último contacto</th><th>Próximo</th><th>Ofertas</th><th>Volumen</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${list.length===0?`<tr><td colspan="8"><div class="empty"><p>No hay clientes. Añade el primero.</p></div></td></tr>`:''}
+          ${list.map(c=>{
+            const st=contactStatus(c);
+            const cliOfertas=ofertas.filter(o=>o.clienteId===c.id);
+            const vol=cliOfertas.filter(o=>o.estado==='ganada').reduce((s,o)=>s+(o.importeVenta||0),0);
+            return `<tr style="cursor:pointer;" onclick="abrirCliente('${c.id}')">
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div class="avatar" style="background:${avatarColor(c.nombre)};color:#fff;font-size:11px;">${initials(c.nombre)}</div>
+                  <div><div style="font-weight:500;">${esc(c.nombre)}</div>${c.empresa?`<div style="font-size:0.72rem;color:var(--ink4);">${esc(c.empresa)}</div>`:''}</div>
+                </div>
+              </td>
+              <td><span class="badge ${c.tipo==='empresa'?'badge-blue':'badge-gray'}">${c.tipo||'—'}</span></td>
+              <td style="font-size:0.8rem;color:var(--ink3);">${c.telefono||'—'}</td>
+              <td style="font-size:0.8rem;color:var(--ink4);">${c.ultimoContacto?fmtDate(c.ultimoContacto):'Nunca'}</td>
+              <td><span class="next-contact ${st}">${fmtProximo(c,st)}</span></td>
+              <td style="font-size:0.8rem;">${cliOfertas.length} <span style="color:var(--ink4);">(${cliOfertas.filter(o=>o.estado==='ganada').length} ✓)</span></td>
+              <td style="font-weight:500;">${vol?fmt(vol):'—'}</td>
+              <td onclick="event.stopPropagation()">
+                <div style="display:flex;gap:4px;">
+                  <button class="btn btn-ghost btn-xs" onclick="abrirCliente('${c.id}')">Ver</button>
+                  <button class="btn btn-danger btn-xs" onclick="event.stopPropagation();delCliente('${c.id}')">✕</button>
+                </div>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
     </div>
+  </div>`;
+}
 
-    <!-- ====== ESTADISTICAS ====== -->
-    <div id="view-estadisticas" style="display:none;">
-      <div style="margin-bottom:1.5rem;">
-        <h1 style="font-size:1.25rem;font-weight:700;">Estadísticas</h1>
-      </div>
-      <div class="stats-grid" id="stats-grid"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" id="stats-charts">
-        <div class="card" id="stats-top5"></div>
-        <div class="card" id="stats-categorias"></div>
-      </div>
-    </div>
+function contactStatus(c){
+  if(!c.proximoContacto) return 'nunca';
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  const fecha=new Date(c.proximoContacto); fecha.setHours(0,0,0,0);
+  const diff=Math.round((fecha-hoy)/86400000);
+  if(diff<0) return 'vencido';
+  if(diff===0) return 'hoy';
+  if(diff<=3) return 'pronto';
+  return 'ok';
+}
+function fmtProximo(c,st){
+  if(!c.proximoContacto) return 'Sin fecha';
+  if(st==='vencido') return 'Vencido';
+  if(st==='hoy') return 'Hoy';
+  return fmtDate(c.proximoContacto);
+}
 
-  </div><!-- /main -->
-</div><!-- /app -->
+// ── FICHA CLIENTE ──
+function abrirCliente(id){
+  const c=clientes.find(x=>x.id===id);
+  if(!c) return;
+  const cliOfertas=ofertas.filter(o=>o.clienteId===id).sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0));
+  const vol=cliOfertas.filter(o=>o.estado==='ganada').reduce((s,o)=>s+(o.importeVenta||0),0);
 
-<!-- MODAL: Nuevo / Editar proveedor -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal">
+  showModal(`
     <div class="modal-header">
-      <h2 id="modal-title">Nuevo proveedor</h2>
-      <button class="btn-icon" onclick="closeModal()" style="background:var(--surface2);color:var(--text);">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="avatar" style="background:${avatarColor(c.nombre)};color:#fff;">${initials(c.nombre)}</div>
+        <div><h2>${esc(c.nombre)}</h2><div style="font-size:0.78rem;color:var(--ink4);">${c.empresa?esc(c.empresa)+' · ':''}<span class="badge ${c.tipo==='empresa'?'badge-blue':'badge-gray'}">${c.tipo||'cliente'}</span></div></div>
+      </div>
+      <button class="close-btn" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
+      <div class="grid-3" style="margin-bottom:1.25rem;">
+        <div class="kpi"><div class="kpi-label">Volumen total</div><div class="kpi-value" style="font-size:1.25rem;">${fmt(vol)}</div></div>
+        <div class="kpi"><div class="kpi-label">Ofertas</div><div class="kpi-value" style="font-size:1.25rem;">${cliOfertas.length}</div><div class="kpi-sub">${cliOfertas.filter(o=>o.estado==='ganada').length} ganadas</div></div>
+        <div class="kpi"><div class="kpi-label">Próximo contacto</div><div class="kpi-value" style="font-size:1rem;">${c.proximoContacto?fmtDate(c.proximoContacto):'Sin fecha'}</div></div>
+      </div>
+      <div class="grid-2" style="margin-bottom:1.25rem;">
+        <div><div style="font-size:0.72rem;color:var(--ink4);margin-bottom:2px;">Teléfono</div><div style="font-weight:500;">${c.telefono||'—'}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--ink4);margin-bottom:2px;">Email</div><div style="font-weight:500;">${c.email||'—'}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--ink4);margin-bottom:2px;">Dirección</div><div style="font-weight:500;">${c.direccion||'—'}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--ink4);margin-bottom:2px;">Último contacto</div><div style="font-weight:500;">${c.ultimoContacto?fmtDate(c.ultimoContacto):'Nunca'}</div></div>
+      </div>
+      ${c.notas?`<div style="background:var(--paper);border-radius:6px;padding:0.75rem;font-size:0.85rem;color:var(--ink3);margin-bottom:1.25rem;">${esc(c.notas)}</div>`:''}
+      <div style="font-size:0.78rem;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.75rem;">Ofertas</div>
+      ${cliOfertas.length===0?`<div class="empty" style="padding:1rem;"><p>Sin ofertas todavía.</p></div>`:''}
+      ${cliOfertas.map(o=>`
+        <div class="activity-row">
+          <div style="flex:1;"><div style="font-weight:500;font-size:0.85rem;">${esc(o.titulo||'Sin título')}</div><div style="font-size:0.75rem;color:var(--ink4);">${o.fecha?fmtDate(o.fecha):''} · ${fmt(o.importeVenta||0)} · Margen ${o.margen||0}%</div></div>
+          ${ofertaStatusBadge(o.estado)}
+        </div>`).join('')}
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="delCliente('${c.id}');closeModal()">Eliminar</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cerrar</button>
+      <button class="btn btn-gold btn-sm" onclick="closeModal();abrirNuevaOferta('${c.id}')">+ Nueva oferta</button>
+      <button class="btn btn-primary btn-sm" onclick="editarCliente('${c.id}')">Editar</button>
+    </div>`,true);
+}
+
+function abrirNuevoCliente(){ editarCliente(null); }
+function editarCliente(id){
+  const c=id?clientes.find(x=>x.id===id):{};
+  showModal(`
+    <div class="modal-header"><h2>${id?'Editar cliente':'Nuevo cliente'}</h2><button class="close-btn" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
       <div class="form-grid">
-        <div class="section-divider" style="margin-top:0;border-top:none;">Información general</div>
-
-        <div class="form-group">
-          <label>Nombre empresa *</label>
-          <input id="f-nombre" placeholder="Ej: Distribuidora García SL" />
-        </div>
-        <div class="form-group">
-          <label>Categoría / Producto</label>
-          <input id="f-categoria" placeholder="Ej: Tornillería, Pintura…" list="cat-list" />
-          <datalist id="cat-list"></datalist>
-        </div>
-        <div class="form-group">
-          <label>Persona de contacto</label>
-          <input id="f-contacto" placeholder="Nombre del comercial" />
-        </div>
-        <div class="form-group">
-          <label>Teléfono</label>
-          <input id="f-telefono" placeholder="600 000 000" />
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input id="f-email" placeholder="contacto@empresa.com" type="email"/>
-        </div>
-        <div class="form-group">
-          <label>Web</label>
-          <input id="f-web" placeholder="www.empresa.com" />
-        </div>
-
-        <div class="section-divider">Condiciones comerciales</div>
-
-        <div class="form-group">
-          <label>Precio medio (€)</label>
-          <input id="f-precio" type="number" min="0" step="0.01" placeholder="0.00" />
-        </div>
-        <div class="form-group">
-          <label>Margen comercial (%)</label>
-          <input id="f-margen" type="number" min="0" max="100" step="0.1" placeholder="25" />
-        </div>
-        <div class="form-group">
-          <label>Descuento habitual (%)</label>
-          <input id="f-descuento" type="number" min="0" max="100" step="0.1" placeholder="5" />
-        </div>
-        <div class="form-group">
-          <label>Rappel anual (%)</label>
-          <input id="f-rappel" type="number" min="0" step="0.1" placeholder="0" />
-        </div>
-        <div class="form-group">
-          <label>Pedido mínimo (€)</label>
-          <input id="f-pedido-min" type="number" min="0" step="1" placeholder="0" />
-        </div>
-        <div class="form-group">
-          <label>Forma de pago</label>
-          <select id="f-pago">
-            <option value="">— Seleccionar —</option>
-            <option>Contado</option>
-            <option>30 días</option>
-            <option>60 días</option>
-            <option>90 días</option>
-            <option>120 días</option>
-            <option>Anticipo</option>
-          </select>
-        </div>
-
-        <div class="section-divider">Logística</div>
-
-        <div class="form-group">
-          <label>Tiempo de entrega (días)</label>
-          <input id="f-entrega" type="number" min="0" step="1" placeholder="3" />
-        </div>
-        <div class="form-group">
-          <label>Portes gratis desde (€)</label>
-          <input id="f-portes" type="number" min="0" step="1" placeholder="200" />
-        </div>
-        <div class="form-group">
-          <label>Coste portes (€)</label>
-          <input id="f-portes-coste" type="number" min="0" step="0.01" placeholder="8.50" />
-        </div>
-        <div class="form-group">
-          <label>Almacén / Zona</label>
-          <input id="f-zona" placeholder="Madrid, Valencia…" />
-        </div>
-
-        <div class="section-divider">Calidad y valoración</div>
-
-        <div class="form-group">
-          <label>Fiabilidad (1–10)</label>
-          <input id="f-fiabilidad" type="number" min="1" max="10" step="1" placeholder="8" />
-        </div>
-        <div class="form-group">
-          <label>Calidad producto (1–10)</label>
-          <input id="f-calidad" type="number" min="1" max="10" step="1" placeholder="8" />
-        </div>
-        <div class="form-group">
-          <label>Atención comercial (1–10)</label>
-          <input id="f-atencion" type="number" min="1" max="10" step="1" placeholder="8" />
-        </div>
-        <div class="form-group">
-          <label>Estado</label>
-          <select id="f-estado">
-            <option value="activo">Activo</option>
-            <option value="pausado">Pausado</option>
-            <option value="inactivo">Inactivo</option>
-          </select>
-        </div>
-
-        <div class="form-group full">
-          <label>Notas</label>
-          <textarea id="f-notas" placeholder="Condiciones especiales, observaciones…"></textarea>
-        </div>
+        <div class="form-group full"><label>Nombre *</label><input id="fc-nombre" value="${esc(c.nombre||'')}" placeholder="Nombre del cliente o empresa"/></div>
+        <div class="form-group"><label>Tipo</label><select id="fc-tipo"><option value="empresa" ${c.tipo==='empresa'?'selected':''}>Empresa</option><option value="particular" ${c.tipo==='particular'?'selected':''}>Particular</option></select></div>
+        <div class="form-group"><label>Empresa / Razón social</label><input id="fc-empresa" value="${esc(c.empresa||'')}" placeholder="Si es empresa"/></div>
+        <div class="form-group"><label>Teléfono</label><input id="fc-telefono" value="${esc(c.telefono||'')}"/></div>
+        <div class="form-group"><label>Email</label><input id="fc-email" value="${esc(c.email||'')}" type="email"/></div>
+        <div class="form-group full"><label>Dirección</label><input id="fc-direccion" value="${esc(c.direccion||'')}"/></div>
+        <div class="form-section">Seguimiento</div>
+        <div class="form-group"><label>Último contacto</label><input id="fc-ultimo" type="date" value="${c.ultimoContacto||''}"/></div>
+        <div class="form-group"><label>Próximo contacto</label><input id="fc-proximo" type="date" value="${c.proximoContacto||''}"/></div>
+        <div class="form-group full"><label>Notas</label><textarea id="fc-notas">${esc(c.notas||'')}</textarea></div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-accent" onclick="saveProveedor()">Guardar proveedor</button>
+      <button class="btn btn-gold" onclick="saveCliente('${id||''}')">Guardar</button>
+    </div>`);
+}
+async function saveCliente(id){
+  const nombre=ge('fc-nombre').value.trim();
+  if(!nombre){toast('El nombre es obligatorio','err');return;}
+  const data={nombre,tipo:gv('fc-tipo'),empresa:gv('fc-empresa'),telefono:gv('fc-telefono'),email:gv('fc-email'),direccion:gv('fc-direccion'),ultimoContacto:gv('fc-ultimo'),proximoContacto:gv('fc-proximo'),notas:gv('fc-notas'),updatedAt:new Date().toISOString()};
+  await saveDoc('clientes',id,data);
+  closeModal(); toast('Cliente guardado','ok');
+}
+async function delCliente(id){ if(!confirm('¿Eliminar cliente?')) return; await delDoc('clientes',id); toast('Cliente eliminado'); }
+
+// ══════════════════════════════════════
+// ═══════ OFERTAS ══════════════════════
+// ══════════════════════════════════════
+function renderOfertas(){
+  ge('topbar-actions').innerHTML=`<button class="btn btn-gold" onclick="abrirNuevaOferta()">+ Nueva oferta</button>`;
+  const filtro=(ge('filtro-ofertas')||{value:''}).value||'';
+  let list=[...ofertas].sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0));
+  if(filtro) list=list.filter(o=>o.estado===filtro);
+
+  const total=ofertas.length;
+  const ganadas=ofertas.filter(o=>o.estado==='ganada');
+  const pendientes=ofertas.filter(o=>o.estado==='enviada'||o.estado==='pendiente');
+  const volGanado=ganadas.reduce((s,o)=>s+(o.importeVenta||0),0);
+  const margenMedio=ganadas.filter(o=>o.margen).length?ganadas.reduce((s,o)=>s+(o.margen||0),0)/ganadas.filter(o=>o.margen).length:0;
+
+  ge('content').innerHTML=`
+  <div class="grid-4" style="margin-bottom:1.25rem;">
+    <div class="kpi"><div class="kpi-label">Total ofertas</div><div class="kpi-value">${total}</div></div>
+    <div class="kpi"><div class="kpi-label">Ganadas</div><div class="kpi-value" style="color:var(--green);">${ganadas.length}</div><div class="kpi-sub">${total?Math.round(ganadas.length/total*100):0}% tasa de éxito</div></div>
+    <div class="kpi"><div class="kpi-label">Volumen ganado</div><div class="kpi-value">${fmt(volGanado)}</div></div>
+    <div class="kpi"><div class="kpi-label">Margen medio ganado</div><div class="kpi-value">${margenMedio?margenMedio.toFixed(1)+'%':'—'}</div></div>
+  </div>
+  <div class="tabs">
+    <div class="tab ${!filtro?'active':''}" onclick="setFiltroOfertas('')">Todas (${total})</div>
+    <div class="tab ${filtro==='pendiente'?'active':''}" onclick="setFiltroOfertas('pendiente')">Pendiente (${ofertas.filter(o=>o.estado==='pendiente').length})</div>
+    <div class="tab ${filtro==='enviada'?'active':''}" onclick="setFiltroOfertas('enviada')">Enviada (${ofertas.filter(o=>o.estado==='enviada').length})</div>
+    <div class="tab ${filtro==='ganada'?'active':''}" onclick="setFiltroOfertas('ganada')">Ganada (${ganadas.length})</div>
+    <div class="tab ${filtro==='perdida'?'active':''}" onclick="setFiltroOfertas('perdida')">Perdida (${ofertas.filter(o=>o.estado==='perdida').length})</div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Oferta</th><th>Cliente</th><th>Proveedor</th><th>Importe</th><th>Margen</th><th>Fecha</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          ${list.length===0?`<tr><td colspan="8"><div class="empty"><p>No hay ofertas. Crea la primera.</p></div></td></tr>`:''}
+          ${list.map(o=>{
+            const cl=clientes.find(c=>c.id===o.clienteId);
+            const pr=proveedores.find(p=>p.id===o.proveedorId);
+            const dias=o.fecha?Math.round((Date.now()-new Date(o.fecha))/86400000):0;
+            return `<tr style="cursor:pointer;" onclick="abrirOferta('${o.id}')">
+              <td><div style="font-weight:500;">${esc(o.titulo||'Sin título')}</div>${o.producto?`<div style="font-size:0.72rem;color:var(--ink4);">${esc(o.producto)}</div>`:''}</td>
+              <td style="font-size:0.82rem;">${cl?esc(cl.nombre):'—'}</td>
+              <td style="font-size:0.82rem;color:var(--ink3);">${pr?esc(pr.nombre):'—'}</td>
+              <td style="font-weight:500;">${fmt(o.importeVenta||0)}</td>
+              <td><span style="font-weight:600;color:${(o.margen||0)>=25?'var(--green)':(o.margen||0)>=15?'var(--amber)':'var(--red)'};">${o.margen||0}%</span></td>
+              <td style="font-size:0.78rem;color:var(--ink4);">${o.fecha?fmtDate(o.fecha):'—'}</td>
+              <td>${ofertaStatusBadge(o.estado)}</td>
+              <td onclick="event.stopPropagation()"><button class="btn btn-danger btn-xs" onclick="delOferta('${o.id}')">✕</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+function setFiltroOfertas(v){ const el=ge('filtro-ofertas'); if(el) el.value=v; else{ const tmp=document.createElement('input'); tmp.id='filtro-ofertas'; tmp.value=v; document.body.appendChild(tmp); } renderOfertas(); }
+function ofertaStatusBadge(s){
+  const map={pendiente:'badge-amber',enviada:'badge-blue',ganada:'badge-green',perdida:'badge-red'};
+  return `<span class="badge ${map[s]||'badge-gray'}">${s||'borrador'}</span>`;
+}
+
+function abrirOferta(id){
+  const o=ofertas.find(x=>x.id===id); if(!o) return;
+  const cl=clientes.find(c=>c.id===o.clienteId);
+  const pr=proveedores.find(p=>p.id===o.proveedorId);
+  showModal(`
+    <div class="modal-header"><h2>${esc(o.titulo||'Oferta')}</h2><button class="close-btn" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="grid-2" style="margin-bottom:1.25rem;">
+        <div class="kpi"><div class="kpi-label">Importe venta</div><div class="kpi-value">${fmt(o.importeVenta||0)}</div></div>
+        <div class="kpi"><div class="kpi-label">Margen</div><div class="kpi-value" style="color:${(o.margen||0)>=25?'var(--green)':'var(--amber)'};">${o.margen||0}%</div><div class="kpi-sub">Coste: ${fmt(o.importeCoste||0)}</div></div>
+      </div>
+      <div class="grid-2" style="margin-bottom:1rem;">
+        <div><div style="font-size:0.72rem;color:var(--ink4);margin-bottom:2px;">Cliente</div><div style="font-weight:500;">${cl?esc(cl.nombre):'—'}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--ink4);margin-bottom:2px;">Proveedor</div><div style="font-weight:500;">${pr?esc(pr.nombre):'—'}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--ink4);margin-bottom:2px;">Producto/Servicio</div><div style="font-weight:500;">${o.producto||'—'}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--ink4);margin-bottom:2px;">Estado</div>${ofertaStatusBadge(o.estado)}</div>
+        <div><div style="font-size:0.72rem;color:var(--ink4);margin-bottom:2px;">Fecha</div><div style="font-weight:500;">${o.fecha?fmtDate(o.fecha):'—'}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--ink4);margin-bottom:2px;">Fecha cierre</div><div style="font-weight:500;">${o.fechaCierre?fmtDate(o.fechaCierre):'—'}</div></div>
+      </div>
+      ${o.notas?`<div style="background:var(--paper);border-radius:6px;padding:0.75rem;font-size:0.85rem;color:var(--ink3);">${esc(o.notas)}</div>`:''}
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="delOferta('${o.id}');closeModal()">Eliminar</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cerrar</button>
+      <button class="btn btn-primary btn-sm" onclick="editarOferta('${o.id}')">Editar</button>
+    </div>`,true);
+}
+
+function abrirNuevaOferta(clienteId){ editarOferta(null,clienteId); }
+function editarOferta(id,preClienteId){
+  const o=id?ofertas.find(x=>x.id===id):{};
+  const cid=preClienteId||o.clienteId||'';
+  const optsClientes=clientes.map(c=>`<option value="${c.id}" ${c.id===cid?'selected':''}>${esc(c.nombre)}</option>`).join('');
+  const optsProvs=proveedores.map(p=>`<option value="${p.id}" ${p.id===o.proveedorId?'selected':''}>${esc(p.nombre)}</option>`).join('');
+  showModal(`
+    <div class="modal-header"><h2>${id?'Editar oferta':'Nueva oferta'}</h2><button class="close-btn" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label>Título *</label><input id="fo-titulo" value="${esc(o.titulo||'')}" placeholder="Ej: Suministro tornillería almacén"/></div>
+        <div class="form-group full"><label>Producto / Servicio</label><input id="fo-producto" value="${esc(o.producto||'')}" placeholder="Descripción del producto o servicio"/></div>
+        <div class="form-group"><label>Cliente</label><select id="fo-cliente"><option value="">— Sin cliente —</option>${optsClientes}</select></div>
+        <div class="form-group"><label>Proveedor</label><select id="fo-proveedor"><option value="">— Sin proveedor —</option>${optsProvs}</select></div>
+        <div class="form-group"><label>Importe de coste (€)</label><input id="fo-coste" type="number" min="0" step="0.01" value="${o.importeCoste||''}" placeholder="0.00" oninput="calcOfertaMargen()"/></div>
+        <div class="form-group"><label>Importe de venta (€)</label><input id="fo-venta" type="number" min="0" step="0.01" value="${o.importeVenta||''}" placeholder="0.00" oninput="calcOfertaMargen()"/></div>
+        <div class="form-group full">
+          <div id="oferta-margen-preview" style="background:var(--paper);border-radius:6px;padding:0.75rem;text-align:center;font-size:0.85rem;color:var(--ink3);">Introduce coste y venta para ver el margen</div>
+        </div>
+        <div class="form-group"><label>Estado</label>
+          <select id="fo-estado">
+            <option value="pendiente" ${o.estado==='pendiente'||!o.estado?'selected':''}>Pendiente</option>
+            <option value="enviada" ${o.estado==='enviada'?'selected':''}>Enviada</option>
+            <option value="ganada" ${o.estado==='ganada'?'selected':''}>Ganada</option>
+            <option value="perdida" ${o.estado==='perdida'?'selected':''}>Perdida</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Fecha</label><input id="fo-fecha" type="date" value="${o.fecha||today()}"/></div>
+        <div class="form-group"><label>Fecha cierre prevista</label><input id="fo-cierre" type="date" value="${o.fechaCierre||''}"/></div>
+        <div class="form-group full"><label>Notas</label><textarea id="fo-notas">${esc(o.notas||'')}</textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-gold" onclick="saveOferta('${id||''}')">Guardar</button>
+    </div>`);
+  setTimeout(calcOfertaMargen,50);
+}
+function calcOfertaMargen(){
+  const coste=parseFloat(ge('fo-coste')?.value)||0;
+  const venta=parseFloat(ge('fo-venta')?.value)||0;
+  const el=ge('oferta-margen-preview'); if(!el) return;
+  if(!coste||!venta){el.textContent='Introduce coste y venta para ver el margen';el.style.background='var(--paper)';return;}
+  const margen=Math.round((venta-coste)/venta*100*10)/10;
+  const beneficio=venta-coste;
+  el.innerHTML=`<span style="font-size:1.5rem;font-weight:700;color:${margen>=25?'var(--green)':margen>=15?'var(--amber)':'var(--red)'};">${margen}% margen</span> · Beneficio: <strong>${fmt(beneficio)}</strong>`;
+  el.style.background=margen>=25?'var(--green-bg)':margen>=15?'var(--amber-bg)':'var(--red-bg)';
+}
+async function saveOferta(id){
+  const titulo=ge('fo-titulo').value.trim();
+  if(!titulo){toast('El título es obligatorio','err');return;}
+  const coste=parseFloat(ge('fo-coste').value)||0;
+  const venta=parseFloat(ge('fo-venta').value)||0;
+  const margen=venta?Math.round((venta-coste)/venta*100*10)/10:0;
+  const data={titulo,producto:gv('fo-producto'),clienteId:gv('fo-cliente'),proveedorId:gv('fo-proveedor'),importeCoste:coste,importeVenta:venta,margen,estado:gv('fo-estado'),fecha:gv('fo-fecha'),fechaCierre:gv('fo-cierre'),notas:gv('fo-notas'),updatedAt:new Date().toISOString()};
+  if(!id) data.createdAt=new Date().toISOString();
+  await saveDoc('ofertas',id,data);
+  closeModal(); toast('Oferta guardada','ok');
+}
+async function delOferta(id){ if(!confirm('¿Eliminar oferta?')) return; await delDoc('ofertas',id); toast('Oferta eliminada'); }
+
+// ══════════════════════════════════════
+// ═══════ CALCULADORA ══════════════════
+// ══════════════════════════════════════
+function renderCalculadora(){
+  ge('topbar-actions').innerHTML='';
+  ge('content').innerHTML=`
+  <div class="grid-2">
+    <div>
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-title">🧮 Calculadora rápida de margen</div>
+        <div class="form-group" style="margin-bottom:0.875rem;">
+          <label>Precio de coste del proveedor (€)</label>
+          <input id="calc-coste" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcMargen()" style="font-size:1.1rem;height:44px;font-weight:500;"/>
+        </div>
+        <div class="form-group" style="margin-bottom:0.875rem;">
+          <label>Margen deseado (%)</label>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <input id="calc-margen" type="range" min="0" max="60" step="1" value="30" oninput="calcMargen();ge('calc-margen-num').textContent=this.value+'%'" style="flex:1;"/>
+            <span id="calc-margen-num" style="min-width:42px;font-weight:600;font-size:0.95rem;">30%</span>
+          </div>
+        </div>
+        <div id="calc-result" style="margin-top:0.5rem;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔄 Calculadora inversa — ¿Qué margen tengo?</div>
+        <div class="form-group" style="margin-bottom:0.875rem;"><label>Precio de coste (€)</label><input id="inv-coste" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcInversa()"/></div>
+        <div class="form-group" style="margin-bottom:0.875rem;"><label>Precio de venta que quieres poner (€)</label><input id="inv-venta" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcInversa()"/></div>
+        <div id="inv-result"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-title">📊 ¿Qué proveedor me da más margen?</div>
+        <div class="form-group" style="margin-bottom:0.875rem;">
+          <label>Precio de venta al cliente (€)</label>
+          <input id="prov-venta" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcProveedores()"/>
+        </div>
+        <div id="prov-ranking-calc" style="margin-top:0.5rem;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💡 Tabla de márgenes rápida</div>
+        <div class="form-group" style="margin-bottom:0.75rem;"><label>Precio de coste base (€)</label><input id="tabla-coste" type="number" min="0" step="0.01" placeholder="100" oninput="calcTabla()"/></div>
+        <div id="tabla-result"></div>
+      </div>
+    </div>
+  </div>`;
+  calcMargen(); calcTabla();
+}
+function calcMargen(){
+  const coste=parseFloat(ge('calc-coste')?.value)||0;
+  const margen=parseFloat(ge('calc-margen')?.value)||30;
+  const el=ge('calc-result'); if(!el) return;
+  if(!coste){el.innerHTML='<div style="text-align:center;padding:1rem;color:var(--ink4);font-size:0.85rem;">Introduce el precio de coste</div>';return;}
+  const venta=coste/(1-margen/100);
+  const beneficio=venta-coste;
+  el.innerHTML=`<div class="calc-result">
+    <div class="calc-label">Precio de venta al cliente</div>
+    <div class="calc-big">${fmt(venta)}</div>
+    <div style="display:flex;justify-content:center;gap:1.5rem;margin-top:0.75rem;">
+      <div><div class="calc-label">Beneficio</div><div style="font-size:1.1rem;font-weight:600;color:#fff;">${fmt(beneficio)}</div></div>
+      <div><div class="calc-label">Margen</div><div style="font-size:1.1rem;font-weight:600;color:var(--gold2);">${margen}%</div></div>
+    </div>
+  </div>`;
+}
+function calcInversa(){
+  const coste=parseFloat(ge('inv-coste')?.value)||0;
+  const venta=parseFloat(ge('inv-venta')?.value)||0;
+  const el=ge('inv-result'); if(!el) return;
+  if(!coste||!venta){el.innerHTML='';return;}
+  const margen=Math.round((venta-coste)/venta*100*10)/10;
+  const beneficio=venta-coste;
+  const color=margen>=25?'var(--green)':margen>=15?'var(--amber)':'var(--red)';
+  el.innerHTML=`<div style="background:var(--paper);border-radius:8px;padding:1rem;text-align:center;">
+    <div style="font-size:2rem;font-weight:700;color:${color};">${margen}% de margen</div>
+    <div style="font-size:0.85rem;color:var(--ink4);margin-top:4px;">Beneficio: ${fmt(beneficio)} · ${margen<15?'⚠️ Margen bajo':margen<25?'Margen aceptable':'✅ Buen margen'}</div>
+  </div>`;
+}
+function calcProveedores(){
+  const venta=parseFloat(ge('prov-venta')?.value)||0;
+  const el=ge('prov-ranking-calc'); if(!el) return;
+  const activos=proveedores.filter(p=>p.estado!=='inactivo'&&p.precio!=null);
+  if(!venta){el.innerHTML='<div style="font-size:0.82rem;color:var(--ink4);">Introduce el precio de venta para ver qué proveedor te deja más margen.</div>';return;}
+  if(!activos.length){el.innerHTML='<div style="font-size:0.82rem;color:var(--ink4);">Añade proveedores con precio para usar esta función.</div>';return;}
+  const ranked=activos.map(p=>{
+    const margen=Math.round((venta-p.precio)/venta*100*10)/10;
+    const benef=venta-p.precio;
+    return {...p,margenCalc:margen,benefCalc:benef};
+  }).sort((a,b)=>b.margenCalc-a.margenCalc);
+  el.innerHTML=ranked.map((p,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:0.5rem 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:1rem;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'  '}</div>
+      <div style="flex:1;min-width:0;"><div style="font-weight:500;font-size:0.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.nombre)}</div><div style="font-size:0.72rem;color:var(--ink4);">Coste: ${fmt(p.precio)}</div></div>
+      <div style="text-align:right;"><div style="font-weight:700;font-size:0.95rem;color:${p.margenCalc>=25?'var(--green)':p.margenCalc>=15?'var(--amber)':'var(--red)'};">${p.margenCalc}%</div><div style="font-size:0.72rem;color:var(--ink4);">${fmt(p.benefCalc)}</div></div>
+    </div>`).join('');
+}
+function calcTabla(){
+  const coste=parseFloat(ge('tabla-coste')?.value)||100;
+  const el=ge('tabla-result'); if(!el) return;
+  const margenes=[10,15,20,25,30,35,40,50];
+  el.innerHTML=`<table><thead><tr><th>Margen</th><th>Precio venta</th><th>Beneficio</th></tr></thead><tbody>
+    ${margenes.map(m=>{const v=coste/(1-m/100);const b=v-coste;return`<tr><td style="font-weight:600;color:${m>=25?'var(--green)':m>=15?'var(--amber)':'var(--red)'};">${m}%</td><td style="font-weight:500;">${fmt(v)}</td><td>${fmt(b)}</td></tr>`}).join('')}
+  </tbody></table>`;
+}
+
+// ══════════════════════════════════════
+// ═══════ PROVEEDORES ══════════════════
+// ══════════════════════════════════════
+function renderProveedores(){
+  ge('topbar-actions').innerHTML=`<button class="btn btn-gold" onclick="editarProveedor(null)">+ Nuevo proveedor</button>`;
+  const q=(ge('q-prov')||{value:''}).value?.toLowerCase()||'';
+  const cat=(ge('cat-prov')||{value:''}).value||'';
+  let list=[...proveedores];
+  if(q) list=list.filter(p=>`${p.nombre} ${p.categoria} ${p.zona}`.toLowerCase().includes(q));
+  if(cat) list=list.filter(p=>p.categoria===cat);
+  const cats=[...new Set(proveedores.map(p=>p.categoria).filter(Boolean))].sort();
+
+  ge('content').innerHTML=`
+  <div style="display:flex;gap:0.75rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+    <div style="position:relative;flex:1;min-width:180px;">
+      <svg style="position:absolute;left:0.6rem;top:50%;transform:translateY(-50%);color:var(--ink4);" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input style="padding-left:2rem;" type="text" placeholder="Buscar proveedor…" id="q-prov" value="${q}" oninput="renderProveedores()"/>
+    </div>
+    <select id="cat-prov" onchange="renderProveedores()" style="height:36px;min-width:160px;">
+      <option value="">Todas las categorías</option>
+      ${cats.map(c=>`<option value="${c}" ${c===cat?'selected':''}>${c}</option>`).join('')}
+    </select>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Proveedor</th><th>Categoría</th><th>Precio</th><th>Margen %</th><th>Entrega</th><th>Pago</th><th>Fiabilidad</th><th>Score</th><th></th></tr></thead>
+        <tbody>
+          ${list.length===0?`<tr><td colspan="9"><div class="empty"><p>No hay proveedores. Añade el primero.</p></div></td></tr>`:''}
+          ${list.map(p=>{
+            const sc=score(p);
+            return `<tr style="cursor:pointer;" onclick="editarProveedor('${p.id}')">
+              <td><div style="font-weight:500;">${esc(p.nombre)}</div>${p.contacto?`<div style="font-size:0.72rem;color:var(--ink4);">${esc(p.contacto)}</div>`:''}</td>
+              <td>${p.categoria?`<span class="badge badge-blue">${esc(p.categoria)}</span>`:'-'}</td>
+              <td style="font-weight:500;">${p.precio!=null?fmt(p.precio):'—'}</td>
+              <td><span style="font-weight:600;color:${(p.margen||0)>=30?'var(--green)':(p.margen||0)>=15?'var(--amber)':'var(--red)'};">${p.margen!=null?p.margen+'%':'—'}</span></td>
+              <td style="font-size:0.82rem;">${p.entrega!=null?p.entrega+'d':'—'}</td>
+              <td style="font-size:0.78rem;color:var(--ink3);">${p.pago||'—'}</td>
+              <td>${p.fiabilidad!=null?`<div class="score-bar"><div class="score-track"><div class="score-fill" style="width:${p.fiabilidad*10}%;background:${scoreColor(p.fiabilidad*10)};"></div></div><span style="font-size:0.78rem;min-width:14px;">${p.fiabilidad}</span></div>`:'-'}</td>
+              <td><span style="font-weight:700;font-size:1rem;color:${scoreColor(sc)};">${sc}</span></td>
+              <td onclick="event.stopPropagation()">
+                <div style="display:flex;gap:3px;">
+                  <button class="btn btn-ghost btn-xs" onclick="editarProveedor('${p.id}')">Editar</button>
+                  <button class="btn btn-danger btn-xs" onclick="delProveedor('${p.id}')">✕</button>
+                </div>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function editarProveedor(id){
+  const p=id?proveedores.find(x=>x.id===id):{};
+  const cats=[...new Set(proveedores.map(x=>x.categoria).filter(Boolean))].sort();
+  showModal(`
+    <div class="modal-header"><h2>${id?'Editar proveedor':'Nuevo proveedor'}</h2><button class="close-btn" onclick="closeModal()">X</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-section" style="margin-top:0;border-top:none;">Informacion general</div>
+        <div class="form-group"><label>Nombre empresa *</label><input id="fp-nombre" value="${esc(p.nombre||'')}"/></div>
+        <div class="form-group"><label>Categoria</label><input id="fp-cat" value="${esc(p.categoria||'')}" list="fp-cat-list"/><datalist id="fp-cat-list">${cats.map(c=>`<option>${c}</option>`).join('')}</datalist></div>
+        <div class="form-group"><label>Contacto</label><input id="fp-contacto" value="${esc(p.contacto||'')}"/></div>
+        <div class="form-group"><label>Telefono</label><input id="fp-tel" value="${esc(p.telefono||'')}"/></div>
+        <div class="form-group"><label>Email</label><input id="fp-email" value="${esc(p.email||'')}" type="email"/></div>
+        <div class="form-group"><label>Zona / Almacen</label><input id="fp-zona" value="${esc(p.zona||'')}"/></div>
+        <div class="form-section">Condiciones comerciales</div>
+        <div class="form-group"><label>Precio coste (€)</label><input id="fp-precio" type="number" min="0" step="0.01" value="${p.precio??''}"/></div>
+        <div class="form-group"><label>Margen comercial (%)</label><input id="fp-margen" type="number" min="0" max="100" step="0.1" value="${p.margen??''}"/></div>
+        <div class="form-group"><label>Descuento habitual (%)</label><input id="fp-desc" type="number" min="0" step="0.1" value="${p.descuento??''}"/></div>
+        <div class="form-group"><label>Rappel anual (%)</label><input id="fp-rappel" type="number" min="0" step="0.1" value="${p.rappel??''}"/></div>
+        <div class="form-group"><label>Pedido minimo (€)</label><input id="fp-pedmin" type="number" min="0" value="${p.pedidoMin??''}"/></div>
+        <div class="form-group"><label>Forma de pago</label>
+          <select id="fp-pago"><option value="">—</option>${['Contado','30 dias','60 dias','90 dias','120 dias','Anticipo'].map(x=>`<option ${p.pago===x?'selected':''}>${x}</option>`).join('')}</select>
+        </div>
+        <div class="form-section">Logistica</div>
+        <div class="form-group"><label>Entrega (dias)</label><input id="fp-entrega" type="number" min="0" value="${p.entrega??''}"/></div>
+        <div class="form-group"><label>Portes gratis desde (€)</label><input id="fp-portes" type="number" min="0" value="${p.portesGratis??''}"/></div>
+        <div class="form-group"><label>Coste portes (€)</label><input id="fp-portescost" type="number" min="0" step="0.01" value="${p.portesCoste??''}"/></div>
+        <div class="form-section">Valoracion</div>
+        <div class="form-group"><label>Fiabilidad (1-10)</label><input id="fp-fiab" type="number" min="1" max="10" value="${p.fiabilidad??''}"/></div>
+        <div class="form-group"><label>Calidad (1-10)</label><input id="fp-cal" type="number" min="1" max="10" value="${p.calidad??''}"/></div>
+        <div class="form-group"><label>Atencion (1-10)</label><input id="fp-aten" type="number" min="1" max="10" value="${p.atencion??''}"/></div>
+        <div class="form-group"><label>Estado</label>
+          <select id="fp-estado">
+            <option value="activo" ${(p.estado||'activo')==='activo'?'selected':''}>Activo</option>
+            <option value="pausado" ${p.estado==='pausado'?'selected':''}>Pausado</option>
+            <option value="inactivo" ${p.estado==='inactivo'?'selected':''}>Inactivo</option>
+          </select>
+        </div>
+        <div class="form-group full"><label>Notas</label><textarea id="fp-notas">${esc(p.notas||'')}</textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-gold" onclick="saveProveedor('${id||''}')">Guardar</button>
+    </div>`,true);
+}
+async function saveProveedor(id){
+  const nombre=ge('fp-nombre').value.trim(); if(!nombre){toast('Nombre obligatorio','err');return;}
+  const data={nombre,categoria:gv('fp-cat'),contacto:gv('fp-contacto'),telefono:gv('fp-tel'),email:gv('fp-email'),zona:gv('fp-zona'),precio:num('fp-precio'),margen:num('fp-margen'),descuento:num('fp-desc'),rappel:num('fp-rappel'),pedidoMin:num('fp-pedmin'),pago:gv('fp-pago'),entrega:num('fp-entrega'),portesGratis:num('fp-portes'),portesCoste:num('fp-portescost'),fiabilidad:num('fp-fiab'),calidad:num('fp-cal'),atencion:num('fp-aten'),estado:gv('fp-estado')||'activo',notas:gv('fp-notas'),updatedAt:new Date().toISOString()};
+  await saveDoc('proveedores',id,data); closeModal(); toast('Proveedor guardado','ok');
+}
+async function delProveedor(id){ if(!confirm('Eliminar proveedor?')) return; await delDoc('proveedores',id); toast('Eliminado'); }
+
+// RANKING
+function renderRanking(){
+  ge('topbar-actions').innerHTML='';
+  const list=[...proveedores].filter(p=>p.estado!=='inactivo').map(p=>({...p,sc:score(p)})).sort((a,b)=>b.sc-a.sc);
+  ge('content').innerHTML=`
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-title">Ajusta los pesos del ranking</div>
+    <div class="grid-4">
+      ${Object.entries({margen:'Margen alto',entrega:'Entrega rapida',fiabilidad:'Fiabilidad',calidad:'Calidad'}).map(([k,lbl])=>`
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:4px;"><span style="font-weight:500;">${lbl}</span><span style="font-weight:700;color:var(--gold);" id="wlbl-${k}">${W[k]}%</span></div>
+          <input type="range" min="0" max="100" step="5" value="${W[k]}" oninput="W['${k}']=+this.value;ge('wlbl-${k}').textContent=this.value+'%';localStorage.setItem('macor_w',JSON.stringify(W));renderRanking()"/>
+        </div>`).join('')}
     </div>
   </div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
-<script>
-// =============================================
-//  FIREBASE CONFIG
-// =============================================
-let db = null;
-let demoMode = false;
-let demoData = [];
-
-const WEIGHTS_DEFAULTS = {precio:30, margen:25, entrega:20, fiabilidad:15, calidad:10};
-
-function getSavedConfig(){
-  try{ return JSON.parse(localStorage.getItem('macor_firebase_cfg')||'null'); }
-  catch{ return null; }
-}
-
-function saveConfig(){
-  const cfg = {
-    apiKey: document.getElementById('cfg-apiKey').value.trim(),
-    authDomain: document.getElementById('cfg-authDomain').value.trim(),
-    projectId: document.getElementById('cfg-projectId').value.trim(),
-    appId: document.getElementById('cfg-appId').value.trim(),
-  };
-  if(!cfg.apiKey || !cfg.projectId){ showToast('Completa al menos API Key y Project ID','error'); return; }
-  localStorage.setItem('macor_firebase_cfg', JSON.stringify(cfg));
-  initFirebase(cfg);
-}
-
-function useDemo(){
-  demoMode = true;
-  demoData = getSampleData();
-  document.getElementById('config-screen').style.display='none';
-  document.getElementById('app').style.display='block';
-  document.getElementById('sync-dot').style.background='#e8a020';
-  document.getElementById('sync-text').textContent='Modo demo';
-  initApp();
-}
-
-function initFirebase(cfg){
-  try{
-    if(firebase.apps.length){ firebase.app(); }
-    else{ firebase.initializeApp(cfg); }
-    db = firebase.firestore();
-    document.getElementById('config-screen').style.display='none';
-    document.getElementById('app').style.display='block';
-    document.getElementById('sync-dot').style.background='#1e9d6e';
-    document.getElementById('sync-text').textContent='Sincronizado';
-    initApp();
-  } catch(e){
-    showToast('Error conectando con Firebase: '+e.message,'error');
-  }
-}
-
-// =============================================
-//  APP STATE
-// =============================================
-let proveedores = [];
-let editingId = null;
-let weights = {...WEIGHTS_DEFAULTS};
-let compareSelected = new Set();
-
-// =============================================
-//  INIT
-// =============================================
-window.addEventListener('DOMContentLoaded', ()=>{
-  const cfg = getSavedConfig();
-  if(cfg && cfg.apiKey){
-    document.getElementById('app').style.display='block';
-    initFirebase(cfg);
-  } else {
-    document.getElementById('config-screen').style.display='flex';
-  }
-});
-
-function initApp(){
-  loadWeights();
-  renderWeightControls();
-  loadProveedores();
-  showTab('lista');
-}
-
-// =============================================
-//  DATA LAYER
-// =============================================
-function loadProveedores(){
-  if(demoMode){
-    proveedores = [...demoData];
-    onDataUpdate();
-    return;
-  }
-  if(!db) return;
-  db.collection('proveedores').orderBy('nombre').onSnapshot(snap=>{
-    proveedores = snap.docs.map(d=>({id:d.id,...d.data()}));
-    onDataUpdate();
-    document.getElementById('sync-dot').style.background='#1e9d6e';
-    document.getElementById('sync-text').textContent='Sincronizado';
-  }, err=>{
-    document.getElementById('sync-dot').style.background='#d94040';
-    document.getElementById('sync-text').textContent='Error sync';
-  });
-}
-
-function onDataUpdate(){
-  renderLista();
-  renderRanking();
-  renderCompareSelector();
-  renderEstadisticas();
-  updateCategoryFilter();
-}
-
-async function saveProveedor(){
-  const nombre = document.getElementById('f-nombre').value.trim();
-  if(!nombre){ showToast('El nombre es obligatorio','error'); return; }
-
-  const data = {
-    nombre,
-    categoria: v('f-categoria'),
-    contacto: v('f-contacto'),
-    telefono: v('f-telefono'),
-    email: v('f-email'),
-    web: v('f-web'),
-    precio: num('f-precio'),
-    margen: num('f-margen'),
-    descuento: num('f-descuento'),
-    rappel: num('f-rappel'),
-    pedidoMin: num('f-pedido-min'),
-    pago: v('f-pago'),
-    entrega: num('f-entrega'),
-    portesGratis: num('f-portes'),
-    portesCoste: num('f-portes-coste'),
-    zona: v('f-zona'),
-    fiabilidad: num('f-fiabilidad'),
-    calidad: num('f-calidad'),
-    atencion: num('f-atencion'),
-    estado: v('f-estado') || 'activo',
-    notas: v('f-notas'),
-    updatedAt: new Date().toISOString(),
-  };
-
-  if(demoMode){
-    if(editingId){
-      const idx = demoData.findIndex(p=>p.id===editingId);
-      if(idx>=0) demoData[idx]={...demoData[idx],...data};
-    } else {
-      demoData.push({id:'demo_'+Date.now(),...data, createdAt:new Date().toISOString()});
-    }
-    proveedores = [...demoData];
-    onDataUpdate();
-    closeModal();
-    showToast('Proveedor guardado ✓','success');
-    return;
-  }
-
-  try{
-    if(editingId){
-      await db.collection('proveedores').doc(editingId).update(data);
-    } else {
-      data.createdAt = new Date().toISOString();
-      await db.collection('proveedores').add(data);
-    }
-    closeModal();
-    showToast('Proveedor guardado ✓','success');
-  } catch(e){ showToast('Error: '+e.message,'error'); }
-}
-
-async function deleteProveedor(id){
-  if(!confirm('¿Eliminar este proveedor?')) return;
-  if(demoMode){
-    demoData = demoData.filter(p=>p.id!==id);
-    proveedores = [...demoData];
-    onDataUpdate();
-    showToast('Proveedor eliminado');
-    return;
-  }
-  try{
-    await db.collection('proveedores').doc(id).delete();
-    showToast('Proveedor eliminado');
-  } catch(e){ showToast('Error: '+e.message,'error'); }
-}
-
-// =============================================
-//  HELPERS
-// =============================================
-function v(id){ return document.getElementById(id).value.trim(); }
-function num(id){ const n=parseFloat(document.getElementById(id).value); return isNaN(n)?null:n; }
-
-function scoreProveedor(p, w){
-  // Normalize each metric 0-100
-  let s = 0, total = 0;
-  const add = (val, max, weight, invert)=>{
-    if(val===null||val===undefined||val==='') return;
-    let norm = Math.min(100, Math.max(0, invert ? Math.max(0,max-val)/max*100 : val/max*100));
-    s += norm * weight;
-    total += weight;
-  };
-  // Precio: lower is better (inverted), assume max reference 1000€
-  if(p.precio) add(p.precio, 1000, w.precio||0, true);
-  // Margen: higher is better, max 60%
-  add(p.margen, 60, w.margen||0, false);
-  // Entrega: lower is better, max 30 days
-  add(p.entrega, 30, w.entrega||0, true);
-  // Fiabilidad 1-10
-  add(p.fiabilidad, 10, w.fiabilidad||0, false);
-  // Calidad 1-10
-  add(p.calidad, 10, w.calidad||0, false);
-
-  return total ? Math.round(s/total) : 0;
-}
-
-function getScoreColor(score){
-  if(score>=70) return '#1e9d6e';
-  if(score>=45) return '#e8a020';
-  return '#d94040';
-}
-
-function getBadgeEstado(estado){
-  const map={activo:'badge-green',pausado:'badge-amber',inactivo:'badge-gray'};
-  return `<span class="badge ${map[estado]||'badge-gray'}">${estado||'activo'}</span>`;
-}
-
-// =============================================
-//  TABS
-// =============================================
-function showTab(tab){
-  ['lista','ranking','comparar','estadisticas'].forEach(t=>{
-    document.getElementById('view-'+t).style.display = t===tab?'block':'none';
-    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
-  });
-  if(tab==='ranking') renderRanking();
-  if(tab==='estadisticas') renderEstadisticas();
-}
-
-// =============================================
-//  LISTA
-// =============================================
-function updateCategoryFilter(){
-  const cats = [...new Set(proveedores.map(p=>p.categoria).filter(Boolean))].sort();
-  const sel = document.getElementById('filter-categoria');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">Todas las categorías</option>';
-  cats.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; if(c===cur) o.selected=true; sel.appendChild(o); });
-
-  const dl = document.getElementById('cat-list');
-  dl.innerHTML = cats.map(c=>`<option value="${c}">`).join('');
-}
-
-function renderLista(){
-  const q = document.getElementById('search-input').value.toLowerCase();
-  const cat = document.getElementById('filter-categoria').value;
-  const sort = document.getElementById('sort-by').value;
-
-  let list = proveedores.filter(p=>{
-    if(cat && p.categoria!==cat) return false;
-    if(q && !(`${p.nombre} ${p.categoria} ${p.contacto} ${p.zona}`).toLowerCase().includes(q)) return false;
-    return true;
-  });
-
-  const w = {...WEIGHTS_DEFAULTS};
-  const sortFns = {
-    nombre: (a,b)=>a.nombre.localeCompare(b.nombre),
-    precio: (a,b)=>(a.precio||9999)-(b.precio||9999),
-    entrega: (a,b)=>(a.entrega||999)-(b.entrega||999),
-    margen: (a,b)=>(b.margen||0)-(a.margen||0),
-    valoracion: (a,b)=>scoreProveedor(b,w)-scoreProveedor(a,w),
-  };
-  list.sort(sortFns[sort]||sortFns.nombre);
-
-  document.getElementById('provider-count').textContent = `${list.length} proveedor${list.length!==1?'es':''}`;
-
-  const tbody = document.getElementById('lista-tbody');
-  if(!list.length){
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg><p>No hay proveedores. Añade el primero.</p></div></td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = list.map(p=>{
-    const score = scoreProveedor(p,w);
-    const col = getScoreColor(score);
-    return `<tr>
-      <td>
-        <div style="font-weight:600;font-size:0.875rem;">${esc(p.nombre)}</div>
-        ${p.contacto?`<div style="font-size:0.75rem;color:var(--text3);">${esc(p.contacto)}</div>`:''}
-      </td>
-      <td>${p.categoria?`<span class="badge badge-blue">${esc(p.categoria)}</span>`:'-'}</td>
-      <td>${p.precio!=null?p.precio.toFixed(2)+' €':'-'}</td>
-      <td>${p.entrega!=null?p.entrega+' días':'-'}</td>
-      <td>${p.margen!=null?`<span style="font-weight:600;color:${p.margen>=30?'var(--green)':p.margen>=15?'var(--amber)':'var(--red)'};">${p.margen}%</span>`:'-'}</td>
-      <td><span style="font-size:0.8rem;">${p.pago||'-'}</span></td>
-      <td>${p.fiabilidad!=null?`<div class="score-bar"><div class="score-bar-track"><div class="score-bar-fill" style="width:${p.fiabilidad*10}%;background:${getScoreColor(p.fiabilidad*10)};"></div></div><span style="font-size:0.8rem;min-width:16px;">${p.fiabilidad}</span></div>`:'-'}</td>
-      <td><span style="font-weight:700;font-size:1rem;color:${col};">${score}</span></td>
-      <td>
-        <div style="display:flex;gap:4px;">
-          <button class="btn btn-ghost btn-sm" onclick='openModalEdit(${JSON.stringify(p.id)})'>Editar</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteProveedor('${p.id}')">Borrar</button>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
-
-// =============================================
-//  MODAL
-// =============================================
-function openModal(){
-  editingId = null;
-  document.getElementById('modal-title').textContent = 'Nuevo proveedor';
-  ['nombre','categoria','contacto','telefono','email','web','notas','zona'].forEach(f=>document.getElementById('f-'+f).value='');
-  ['precio','margen','descuento','rappel','pedido-min','entrega','portes','portes-coste','fiabilidad','calidad','atencion'].forEach(f=>document.getElementById('f-'+f).value='');
-  document.getElementById('f-pago').value='';
-  document.getElementById('f-estado').value='activo';
-  document.getElementById('modal-overlay').classList.add('open');
-}
-
-function openModalEdit(id){
-  const p = proveedores.find(x=>x.id===id);
-  if(!p) return;
-  editingId = id;
-  document.getElementById('modal-title').textContent = 'Editar proveedor';
-  setV('f-nombre', p.nombre);
-  setV('f-categoria', p.categoria);
-  setV('f-contacto', p.contacto);
-  setV('f-telefono', p.telefono);
-  setV('f-email', p.email);
-  setV('f-web', p.web);
-  setV('f-zona', p.zona);
-  setV('f-notas', p.notas);
-  setV('f-precio', p.precio);
-  setV('f-margen', p.margen);
-  setV('f-descuento', p.descuento);
-  setV('f-rappel', p.rappel);
-  setV('f-pedido-min', p.pedidoMin);
-  setV('f-pago', p.pago);
-  setV('f-entrega', p.entrega);
-  setV('f-portes', p.portesGratis);
-  setV('f-portes-coste', p.portesCoste);
-  setV('f-fiabilidad', p.fiabilidad);
-  setV('f-calidad', p.calidad);
-  setV('f-atencion', p.atencion);
-  setV('f-estado', p.estado||'activo');
-  document.getElementById('modal-overlay').classList.add('open');
-}
-
-function setV(id, val){ document.getElementById(id).value = val!=null&&val!==undefined?val:''; }
-
-function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); }
-
-document.getElementById('modal-overlay').addEventListener('click',e=>{
-  if(e.target===document.getElementById('modal-overlay')) closeModal();
-});
-
-// =============================================
-//  RANKING
-// =============================================
-const WEIGHT_LABELS = {
-  precio: 'Precio bajo',
-  margen: 'Margen alto',
-  entrega: 'Entrega rápida',
-  fiabilidad: 'Fiabilidad',
-  calidad: 'Calidad producto',
-};
-
-function loadWeights(){
-  try{ const s=JSON.parse(localStorage.getItem('macor_weights')||'null'); if(s) weights={...WEIGHTS_DEFAULTS,...s}; }
-  catch{}
-}
-function saveWeights(){ localStorage.setItem('macor_weights', JSON.stringify(weights)); }
-
-function renderWeightControls(){
-  const el = document.getElementById('weight-controls');
-  el.innerHTML = Object.keys(weights).map(k=>`
-    <div class="weight-control">
-      <div class="weight-label">${WEIGHT_LABELS[k]||k} <span id="wv-${k}">${weights[k]}%</span></div>
-      <input type="range" min="0" max="100" value="${weights[k]}" step="5"
-        oninput="weights['${k}']=+this.value;document.getElementById('wv-${k}').textContent=this.value+'%';saveWeights();renderRanking();" />
-    </div>
-  `).join('');
-}
-
-function renderRanking(){
-  const list = [...proveedores]
-    .filter(p=>p.estado!=='inactivo')
-    .map(p=>({...p, score: scoreProveedor(p, weights)}))
-    .sort((a,b)=>b.score-a.score);
-
-  const el = document.getElementById('ranking-list');
-  if(!list.length){
-    el.innerHTML = `<div class="empty"><p>Sin proveedores activos todavía.</p></div>`;
-    return;
-  }
-  el.innerHTML = list.map((p,i)=>{
-    const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
-    const col = getScoreColor(p.score);
-    const medals = ['🥇','🥈','🥉'];
-    return `<div class="rank-card ${rankClass}">
-      <div class="rank-number">${medals[i]||i+1}</div>
-      <div class="rank-info">
-        <div class="rank-name">${esc(p.nombre)}</div>
-        <div class="rank-meta">
-          ${p.categoria?`<span class="badge badge-blue" style="margin-right:4px;">${esc(p.categoria)}</span>`:''}
-          ${p.entrega!=null?`⏱ ${p.entrega}d`:''}
-          ${p.margen!=null?` · ${p.margen}% margen`:''}
-          ${p.pago?` · ${p.pago}`:''}
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;margin-top:8px;">
-          <div style="font-size:0.75rem;color:var(--text2);">Score</div>
-          <div class="score-bar-track" style="flex:1;height:8px;">
-            <div class="score-bar-fill" style="width:${p.score}%;background:${col};"></div>
+  <div style="display:flex;flex-direction:column;gap:0.75rem;">
+    ${list.length===0?'<div class="empty"><p>Sin proveedores activos.</p></div>':''}
+    ${list.map((p,i)=>{
+      const rc=i===0?'var(--gold-bg)':i===1?'var(--paper2)':'var(--surface)';
+      const bc=i===0?'var(--gold)':i===1?'var(--border2)':'var(--border)';
+      return `<div style="background:${rc};border:1px solid ${bc};border-radius:var(--r);padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;">
+        <div style="font-size:1.5rem;width:36px;text-align:center;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:0.95rem;">${esc(p.nombre)}</div>
+          <div style="font-size:0.78rem;color:var(--ink4);margin-top:2px;">
+            ${p.categoria?`<span class="badge badge-blue" style="margin-right:4px;">${esc(p.categoria)}</span>`:''}
+            ${p.entrega!=null?`⏱ ${p.entrega}d`:''}${p.margen!=null?` · ${p.margen}% margen`:''}${p.pago?` · ${p.pago}`:''}
           </div>
-          <div style="font-size:0.8rem;font-weight:600;color:${col};min-width:32px;">${p.score}/100</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:8px;">
+            <div class="score-track" style="flex:1;height:7px;"><div class="score-fill" style="width:${p.sc}%;background:${scoreColor(p.sc)};"></div></div>
+            <span style="font-size:0.78rem;font-weight:600;color:${scoreColor(p.sc)};min-width:40px;">${p.sc}/100</span>
+          </div>
         </div>
-      </div>
-      <div class="rank-score-big" style="color:${col};">${p.score}</div>
-    </div>`;
-  }).join('');
-}
-
-// =============================================
-//  COMPARAR
-// =============================================
-function renderCompareSelector(){
-  const el = document.getElementById('compare-selector');
-  el.innerHTML = proveedores.map(p=>{
-    const sel = compareSelected.has(p.id);
-    return `<button class="btn ${sel?'btn-primary':'btn-ghost'}" onclick="toggleCompare('${p.id}')">${esc(p.nombre)}</button>`;
-  }).join('');
-  renderCompareTable();
-}
-
-function toggleCompare(id){
-  if(compareSelected.has(id)) compareSelected.delete(id);
-  else compareSelected.add(id);
-  renderCompareSelector();
-}
-
-function renderCompareTable(){
-  const sel = proveedores.filter(p=>compareSelected.has(p.id));
-  const el = document.getElementById('compare-table');
-  if(sel.length<2){ el.innerHTML=`<div class="empty"><p>Selecciona al menos 2 proveedores arriba.</p></div>`; return; }
-
-  const fields = [
-    {key:'precio', label:'Precio medio (€)', fmt:v=>v!=null?v.toFixed(2)+' €':'-', better:'min'},
-    {key:'margen', label:'Margen (%)', fmt:v=>v!=null?v+'%':'-', better:'max'},
-    {key:'descuento', label:'Descuento (%)', fmt:v=>v!=null?v+'%':'-', better:'max'},
-    {key:'rappel', label:'Rappel anual (%)', fmt:v=>v!=null?v+'%':'-', better:'max'},
-    {key:'entrega', label:'Tiempo entrega (días)', fmt:v=>v!=null?v+' días':'-', better:'min'},
-    {key:'portesGratis', label:'Portes gratis desde (€)', fmt:v=>v!=null?v+'€':'-', better:'min'},
-    {key:'portesCoste', label:'Coste portes (€)', fmt:v=>v!=null?v+'€':'-', better:'min'},
-    {key:'pedidoMin', label:'Pedido mínimo (€)', fmt:v=>v!=null?v+'€':'-', better:'min'},
-    {key:'pago', label:'Forma de pago', fmt:v=>v||'-', better:null},
-    {key:'fiabilidad', label:'Fiabilidad (1-10)', fmt:v=>v!=null?v:'-', better:'max'},
-    {key:'calidad', label:'Calidad (1-10)', fmt:v=>v!=null?v:'-', better:'max'},
-    {key:'atencion', label:'Atención comercial (1-10)', fmt:v=>v!=null?v:'-', better:'max'},
-    {key:'zona', label:'Zona / Almacén', fmt:v=>v||'-', better:null},
-    {key:'score', label:'⭐ Score global', fmt:v=>v+'/100', better:'max'},
-  ];
-
-  const w = {...WEIGHTS_DEFAULTS};
-  sel.forEach(p=>{ p._score = scoreProveedor(p,w); });
-
-  const cols = `grid-template-columns: 160px ${sel.map(()=>'1fr').join(' ')}`;
-
-  const rows = fields.map(f=>{
-    const vals = sel.map(p=>f.key==='score'?p._score:p[f.key]);
-    const numVals = vals.filter(v=>v!=null&&v!==''&&!isNaN(v));
-    let bestVal = null;
-    if(f.better==='max' && numVals.length) bestVal = Math.max(...numVals);
-    if(f.better==='min' && numVals.length) bestVal = Math.min(...numVals);
-
-    const cells = sel.map((p,i)=>{
-      const val = f.key==='score'?p._score:p[f.key];
-      const isBest = bestVal!==null && parseFloat(val)===bestVal;
-      return `<div class="cmp-cell${isBest?' cmp-best':''}" style="${sel.length>1?cols.replace('160px ','').replace('1fr',`1fr`):''}">${f.fmt(val)}${isBest?` ✓`:''}</div>`;
-    }).join('');
-
-    return `<div class="cmp-row" style="${cols};">
-      <div class="cmp-cell cmp-label">${f.label}</div>
-      ${cells}
-    </div>`;
-  }).join('');
-
-  const header = `<div class="cmp-row" style="${cols};margin-bottom:0.5rem;">
-    <div class="cmp-cell cmp-head" style="border-radius:var(--radius) 0 0 var(--radius);">Característica</div>
-    ${sel.map((p,i)=>`<div class="cmp-cell cmp-head" style="${i===sel.length-1?'border-radius:0 var(--radius) var(--radius) 0;':''}">${esc(p.nombre)}</div>`).join('')}
+        <div style="font-size:1.75rem;font-weight:800;color:${scoreColor(p.sc)};flex-shrink:0;">${p.sc}</div>
+      </div>`;
+    }).join('')}
   </div>`;
-
-  el.innerHTML = `<div class="compare-grid">${header}${rows}</div>`;
 }
 
-// =============================================
-//  ESTADÍSTICAS
-// =============================================
-function renderEstadisticas(){
-  const activos = proveedores.filter(p=>p.estado!=='inactivo');
-  const w = {...WEIGHTS_DEFAULTS};
-  const scores = activos.map(p=>scoreProveedor(p,w));
-  const avgScore = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
-  const avgMargen = activos.filter(p=>p.margen!=null).length ?
-    (activos.filter(p=>p.margen!=null).reduce((a,p)=>a+p.margen,0)/activos.filter(p=>p.margen!=null).length).toFixed(1) : '-';
-  const avgEntrega = activos.filter(p=>p.entrega!=null).length ?
-    (activos.filter(p=>p.entrega!=null).reduce((a,p)=>a+p.entrega,0)/activos.filter(p=>p.entrega!=null).length).toFixed(1) : '-';
-  const cats = [...new Set(proveedores.map(p=>p.categoria).filter(Boolean))];
+// HELPERS
+function score(p){
+  let s=0,t=0;
+  const add=(v,max,w,inv)=>{if(v==null)return;let n=Math.min(100,Math.max(0,inv?(Math.max(0,max-v)/max)*100:(v/max)*100));s+=n*w;t+=w;};
+  add(p.margen,60,W.margen||0,false);
+  add(p.entrega,30,W.entrega||0,true);
+  add(p.fiabilidad,10,W.fiabilidad||0,false);
+  add(p.calidad,10,W.calidad||0,false);
+  return t?Math.round(s/t):0;
+}
+function scoreColor(s){return s>=70?'var(--green)':s>=45?'var(--amber)':'var(--red)';}
+function fmt(n){return new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(n||0);}
+function fmtDate(d){if(!d)return'';try{return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});}catch{return d;}}
+function today(){return new Date().toISOString().split('T')[0];}
+function isThisMonth(d){if(!d)return false;const now=new Date(),dt=new Date(d);return dt.getMonth()===now.getMonth()&&dt.getFullYear()===now.getFullYear();}
+function ge(id){return document.getElementById(id);}
+function gv(id){const el=ge(id);return el?el.value.trim():'';}
+function num(id){const v=parseFloat(ge(id)?.value);return isNaN(v)?null:v;}
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+function initials(s){return(s||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+function avatarColor(s){const colors=['#2a5a8a','#1a6a4a','#7a3a2a','#4a2a7a','#2a6a6a','#6a4a1a','#5a2a5a','#3a5a2a'];let h=0;for(let i=0;i<(s||'').length;i++)h=(h*31+s.charCodeAt(i))>>>0;return colors[h%colors.length];}
 
-  document.getElementById('stats-grid').innerHTML = `
-    <div class="stat"><div class="stat-label">Proveedores totales</div><div class="stat-value">${proveedores.length}</div><div class="stat-sub">${activos.length} activos</div></div>
-    <div class="stat"><div class="stat-label">Score medio</div><div class="stat-value" style="color:${getScoreColor(avgScore)};">${avgScore}</div><div class="stat-sub">sobre 100</div></div>
-    <div class="stat"><div class="stat-label">Margen medio</div><div class="stat-value">${avgMargen}%</div><div class="stat-sub">en proveedores activos</div></div>
-    <div class="stat"><div class="stat-label">Entrega media</div><div class="stat-value">${avgEntrega}d</div><div class="stat-sub">días promedio</div></div>
-    <div class="stat"><div class="stat-label">Categorías</div><div class="stat-value">${cats.length}</div><div class="stat-sub">distintas</div></div>
-  `;
-
-  // Top 5
-  const top5 = [...activos].map(p=>({...p,score:scoreProveedor(p,w)})).sort((a,b)=>b.score-a.score).slice(0,5);
-  document.getElementById('stats-top5').innerHTML = `
-    <div class="card-title" style="margin-bottom:1rem;">Top 5 proveedores</div>
-    ${top5.map((p,i)=>`
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <span style="width:20px;font-size:0.8rem;font-weight:700;color:var(--text3);">${i+1}</span>
-        <span style="flex:1;font-size:0.875rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.nombre)}</span>
-        <div class="score-bar-track" style="width:80px;height:6px;flex-shrink:0;"><div class="score-bar-fill" style="width:${p.score}%;background:${getScoreColor(p.score)};"></div></div>
-        <span style="font-size:0.8rem;font-weight:700;min-width:32px;text-align:right;color:${getScoreColor(p.score)};">${p.score}</span>
-      </div>
-    `).join('')}
-  `;
-
-  // Por categoría
-  const byCat = {};
-  proveedores.forEach(p=>{ const c=p.categoria||'Sin categoría'; if(!byCat[c]) byCat[c]=0; byCat[c]++; });
-  const catEntries = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
-  document.getElementById('stats-categorias').innerHTML = `
-    <div class="card-title" style="margin-bottom:1rem;">Por categoría</div>
-    ${catEntries.map(([cat,n])=>`
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <span style="flex:1;font-size:0.875rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(cat)}</span>
-        <div class="score-bar-track" style="width:80px;height:6px;flex-shrink:0;"><div class="score-bar-fill" style="width:${Math.round(n/proveedores.length*100)}%;background:var(--primary);"></div></div>
-        <span style="font-size:0.8rem;font-weight:700;min-width:20px;text-align:right;">${n}</span>
-      </div>
-    `).join('')}
-  `;
+// DATA LAYER
+async function saveDoc(col,id,data){
+  if(demoMode){
+    const arr=col==='proveedores'?proveedores:col==='clientes'?clientes:ofertas;
+    if(id){const i=arr.findIndex(x=>x.id===id);if(i>=0)arr[i]={...arr[i],...data};}
+    else arr.push({id:'d_'+Date.now(),...data,createdAt:new Date().toISOString()});
+    refreshAll(); return;
+  }
+  if(id) await db.collection(col).doc(id).update(data);
+  else await db.collection(col).add({...data,createdAt:new Date().toISOString()});
+}
+async function delDoc(col,id){
+  if(demoMode){
+    if(col==='proveedores')proveedores=proveedores.filter(x=>x.id!==id);
+    else if(col==='clientes')clientes=clientes.filter(x=>x.id!==id);
+    else if(col==='ofertas')ofertas=ofertas.filter(x=>x.id!==id);
+    refreshAll(); return;
+  }
+  await db.collection(col).doc(id).delete();
 }
 
-// =============================================
-//  TOAST
-// =============================================
-function showToast(msg, type=''){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast'+(type?' '+type:'');
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
+// MODAL
+function showModal(html,lg=false){
+  const box=ge('modal-box'); box.className='modal'+(lg?' modal-lg':''); box.innerHTML=html;
+  ge('modal-overlay').classList.add('open');
+}
+function closeModal(){ge('modal-overlay').classList.remove('open');}
+ge('modal-overlay').addEventListener('click',e=>{if(e.target===ge('modal-overlay'))closeModal();});
+
+// TOAST
+function toast(msg,type=''){
+  const t=ge('toast'); t.textContent=msg; t.className='toast'+(type?' '+type:'');
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// =============================================
-//  DEMO DATA
-// =============================================
-function getSampleData(){
-  return [
-    {id:'d1',nombre:'Tornipro Distribuciones SL',categoria:'Tornillería',contacto:'Luis Ferrando',telefono:'961 234 567',email:'lferrando@tornipro.es',web:'www.tornipro.es',precio:8.90,margen:38,descuento:12,rappel:3,pedidoMin:120,pago:'30 días',entrega:2,portesGratis:180,portesCoste:5.50,zona:'Valencia',fiabilidad:9,calidad:9,atencion:9,estado:'activo',notas:'Nuestro principal proveedor de tornillería estándar. Muy puntual, nunca falla. Rappel pagado cada diciembre. Tienen catálogo de más de 4.000 referencias. Ofrecen tornillería inoxidable, galvanizada y zincada.'},
-    {id:'d2',nombre:'Ferretería Industrial Gómez',categoria:'Tornillería',contacto:'Paco Gómez',telefono:'965 441 820',email:'pgomez@figomez.com',web:'www.figomez.com',precio:9.80,margen:32,descuento:8,rappel:1,pedidoMin:200,pago:'60 días',entrega:4,portesGratis:250,portesCoste:7,zona:'Alicante',fiabilidad:7,calidad:8,atencion:7,estado:'activo',notas:'Buenas condiciones de pago a 60 días. A veces tienen roturas de stock en referencias pequeñas. Mejor para pedidos grandes. Precio algo más alto que Tornipro pero con más plazo de pago.'},
-    {id:'d3',nombre:'Pinturas Levante SA',categoria:'Pintura',contacto:'Carmen Soler',telefono:'963 887 112',email:'carmen.soler@pinturas-levante.es',web:'www.pinturas-levante.es',precio:24.50,margen:35,descuento:10,rappel:2,pedidoMin:300,pago:'30 días',entrega:3,portesGratis:300,portesCoste:8,zona:'Valencia',fiabilidad:9,calidad:9,atencion:10,estado:'activo',notas:'Excelente atención comercial. Carmen siempre resuelve cualquier problema rápido. Tienen toda la gama de pinturas plásticas, esmaltes y barnices. Precios muy competitivos para pinturas de interior. Hacen color a medida sin coste adicional.'},
-    {id:'d4',nombre:'ColorMax Ibérica',categoria:'Pintura',contacto:'Javier Ruiz',telefono:'934 220 958',email:'jruiz@colormax.es',web:'www.colormax.es',precio:31.00,margen:28,descuento:5,rappel:0,pedidoMin:500,pago:'60 días',entrega:6,portesGratis:500,portesCoste:12,zona:'Barcelona',fiabilidad:6,calidad:10,atencion:6,estado:'activo',notas:'Pintura de gama alta, calidad insuperable para trabajos premium. Pero el pedido mínimo es alto y la entrega tarda más. Atención al cliente mejorable. Solo usar cuando el cliente pide una marca concreta o calidad top.'},
-    {id:'d5',nombre:'Herramientas Martínez e Hijos',categoria:'Herramientas',contacto:'Roberto Martínez',telefono:'960 334 775',email:'rmartinez@hmartinez.com',web:'www.hmartinez.com',precio:52.00,margen:30,descuento:10,rappel:2,pedidoMin:250,pago:'30 días',entrega:2,portesGratis:300,portesCoste:9,zona:'Murcia',fiabilidad:8,calidad:8,atencion:8,estado:'activo',notas:'Buen equilibrio calidad-precio en herramientas manuales y eléctricas. Entrega en 48h siempre. Roberto es muy accesible por teléfono. Tienen buen stock de Bosch, Makita y Stanley.'},
-    {id:'d6',nombre:'TecnoHerr Distribuciones',categoria:'Herramientas',contacto:'Silvia Navarro',telefono:'916 778 234',email:'snavarro@tecnoherr.es',web:'www.tecnoherr.es',precio:47.00,margen:25,descuento:7,rappel:1,pedidoMin:400,pago:'90 días',entrega:1,portesGratis:400,portesCoste:0,zona:'Madrid',fiabilidad:8,calidad:9,atencion:7,estado:'activo',notas:'Lo mejor es que entregan en 24h y los portes son siempre gratis. Herramientas profesionales de alta gama. Pago a 90 días muy cómodo para la tesorería. El pedido mínimo es algo alto. Gama industrial muy completa.'},
-    {id:'d7',nombre:'Eléctrica del Mediterráneo SL',categoria:'Material Eléctrico',contacto:'Andrés Vidal',telefono:'962 550 301',email:'avidal@electrica-med.com',web:'www.electrica-med.com',precio:18.75,margen:33,descuento:9,rappel:2,pedidoMin:150,pago:'30 días',entrega:2,portesGratis:200,portesCoste:6,zona:'Valencia',fiabilidad:9,calidad:9,atencion:9,estado:'activo',notas:'Referencia en material eléctrico en la zona de Valencia. Cables, canaletas, enchufes, cuadros eléctricos… de todo. Andrés llama cada mes para ver si necesitamos algo. Muy proactivos. Excelente servicio postventa.'},
-    {id:'d8',nombre:'Iberelectra',categoria:'Material Eléctrico',contacto:'Mónica Pascual',telefono:'932 114 867',email:'mpascual@iberelectra.es',web:'www.iberelectra.es',precio:16.20,margen:29,descuento:6,rappel:1,pedidoMin:300,pago:'60 días',entrega:5,portesGratis:350,portesCoste:10,zona:'Barcelona',fiabilidad:7,calidad:8,atencion:6,estado:'activo',notas:'Precios algo más bajos que Eléctrica del Mediterráneo pero la atención es más fría y la entrega tarda más. Útil para pedidos grandes donde el precio importa más que la velocidad.'},
-    {id:'d9',nombre:'Fontanería Roca Distribuciones',categoria:'Fontanería',contacto:'Miguel Roca',telefono:'964 223 489',email:'mroca@fontroca.es',web:'www.fontroca.es',precio:34.00,margen:36,descuento:11,rappel:3,pedidoMin:200,pago:'30 días',entrega:3,portesGratis:250,portesCoste:7,zona:'Castellón',fiabilidad:9,calidad:9,atencion:9,estado:'activo',notas:'Los mejores en fontanería de la zona. Todo tipo de tuberías, grifería, sanitarios y accesorios. Miguel siempre tiene stock. Rappel muy generoso. Llevan trabajando con nosotros desde el principio y nunca han fallado.'},
-    {id:'d10',nombre:'AquaSupply España',categoria:'Fontanería',contacto:'Elena Torres',telefono:'911 345 678',email:'etorres@aquasupply.es',web:'www.aquasupply.es',precio:29.50,margen:31,descuento:8,rappel:1,pedidoMin:400,pago:'60 días',entrega:4,portesGratis:400,portesCoste:11,zona:'Madrid',fiabilidad:7,calidad:8,atencion:7,estado:'activo',notas:'Precios algo mejores en grifería de gama media. Pedido mínimo alto. Entrega más lenta que Roca. Interesante para proyectos grandes donde se puede planificar con tiempo.'},
-    {id:'d11',nombre:'Adhesivos y Sellantes García',categoria:'Adhesivos y Sellantes',contacto:'Toni García',telefono:'966 112 034',email:'toni@adhesivosgarcia.com',precio:14.30,margen:42,descuento:13,rappel:3,pedidoMin:100,pago:'30 días',entrega:2,portesGratis:150,portesCoste:5,zona:'Alicante',fiabilidad:8,calidad:8,atencion:9,estado:'activo',notas:'Especialistas en siliconas, masillas y adhesivos industriales. Margen excelente. Toni es un crack, siempre recomienda el producto adecuado para cada trabajo. Pedido mínimo muy bajo, ideal para reposición rápida.'},
-    {id:'d12',nombre:'Protecciones del Sur SL',categoria:'EPI y Seguridad',contacto:'Laura Jiménez',telefono:'954 667 890',email:'ljimenez@protesur.es',web:'www.protesur.es',precio:22.00,margen:34,descuento:8,rappel:2,pedidoMin:180,pago:'30 días',entrega:3,portesGratis:220,portesCoste:7,zona:'Sevilla',fiabilidad:8,calidad:9,atencion:8,estado:'activo',notas:'Todo en EPIs: cascos, guantes, gafas, arneses, calzado de seguridad. Productos certificados CE. Buena relación calidad-precio. Entrega puntual. Laura manda el catálogo actualizado cada temporada.'},
-    {id:'d13',nombre:'Abrasivos Peninsulares',categoria:'Abrasivos',contacto:'Sergio Blanco',telefono:'981 445 223',email:'sblanco@abrasivospe.com',precio:11.60,margen:40,descuento:12,rappel:2,pedidoMin:120,pago:'30 días',entrega:4,portesGratis:200,portesCoste:6,zona:'Galicia',fiabilidad:7,calidad:8,atencion:7,estado:'activo',notas:'Discos de corte, lijas, muelas… toda la gama de abrasivos. Buen margen. La entrega desde Galicia tarda algo más pero compensa con el precio. Sergio responde rápido por WhatsApp.'},
-    {id:'d14',nombre:'Químicos Industriales Navarro',categoria:'Productos Químicos',contacto:'Pilar Navarro',telefono:'963 778 512',email:'pnavarro@quimnavarro.es',web:'www.quimnavarro.es',precio:19.80,margen:37,descuento:10,rappel:2,pedidoMin:200,pago:'60 días',entrega:3,portesGratis:280,portesCoste:8,zona:'Valencia',fiabilidad:8,calidad:9,atencion:8,estado:'activo',notas:'Desengrasantes, lubricantes, limpiatodos industriales, antioxidantes. Productos de muy buena calidad. Pilar asesora bien sobre qué producto usar en cada caso. Pago a 60 días cómodo.'},
-    {id:'d15',nombre:'Suministros Castilla Norte',categoria:'Tornillería',contacto:'Fernando Álvarez',telefono:'983 221 664',email:'falvarez@scastilla.es',precio:10.50,margen:29,descuento:6,rappel:0,pedidoMin:300,pago:'60 días',entrega:7,portesGratis:350,portesCoste:9,zona:'Valladolid',fiabilidad:6,calidad:7,atencion:5,estado:'pausado',notas:'Precios aceptables pero la atención es mala y la entrega tarda mucho desde Valladolid. Tienen roturas de stock frecuentes. En pausa hasta ver si mejoran el servicio. No recomendable para pedidos urgentes.'},
+// DEMO DATA
+function loadDemoData(){
+  const hoy=today();
+  const hace=(d)=>{const dt=new Date();dt.setDate(dt.getDate()-d);return dt.toISOString().split('T')[0];};
+  const en=(d)=>{const dt=new Date();dt.setDate(dt.getDate()+d);return dt.toISOString().split('T')[0];};
+  proveedores=[
+    {id:'p1',nombre:'Tornipro Distribuciones SL',categoria:'Tornilleria',contacto:'Luis Ferrando',telefono:'961 234 567',email:'lferrando@tornipro.es',precio:8.90,margen:38,descuento:12,rappel:3,pedidoMin:120,pago:'30 dias',entrega:2,portesGratis:180,portesCoste:5.50,zona:'Valencia',fiabilidad:9,calidad:9,atencion:9,estado:'activo',notas:'Principal proveedor tornilleria. Rappel en diciembre.'},
+    {id:'p2',nombre:'Pinturas Levante SA',categoria:'Pintura',contacto:'Carmen Soler',telefono:'963 887 112',email:'carmen@pinturas-levante.es',precio:24.50,margen:35,descuento:10,rappel:2,pedidoMin:300,pago:'30 dias',entrega:3,portesGratis:300,portesCoste:8,zona:'Valencia',fiabilidad:9,calidad:9,atencion:10,estado:'activo',notas:'Excelente atencion. Color a medida sin coste.'},
+    {id:'p3',nombre:'TecnoHerr Distribuciones',categoria:'Herramientas',contacto:'Silvia Navarro',telefono:'916 778 234',email:'snavarro@tecnoherr.es',precio:47.00,margen:25,descuento:7,rappel:1,pedidoMin:400,pago:'90 dias',entrega:1,portesGratis:400,portesCoste:0,zona:'Madrid',fiabilidad:8,calidad:9,atencion:7,estado:'activo',notas:'Entrega 24h, portes siempre gratis.'},
+    {id:'p4',nombre:'Electrica del Mediterraneo',categoria:'Material Electrico',contacto:'Andres Vidal',telefono:'962 550 301',email:'avidal@electrica-med.com',precio:18.75,margen:33,descuento:9,rappel:2,pedidoMin:150,pago:'30 dias',entrega:2,portesGratis:200,portesCoste:6,zona:'Valencia',fiabilidad:9,calidad:9,atencion:9,estado:'activo',notas:'Referencia en material electrico en Valencia.'},
+    {id:'p5',nombre:'Fontaneria Roca Distribuciones',categoria:'Fontaneria',contacto:'Miguel Roca',telefono:'964 223 489',precio:34.00,margen:36,descuento:11,rappel:3,pedidoMin:200,pago:'30 dias',entrega:3,portesGratis:250,portesCoste:7,zona:'Castellon',fiabilidad:9,calidad:9,atencion:9,estado:'activo',notas:'Los mejores en fontaneria de la zona.'},
+  ];
+  clientes=[
+    {id:'c1',nombre:'Construcciones Alborch SL',tipo:'empresa',empresa:'Construcciones Alborch SL',telefono:'963 112 334',email:'info@alborch.es',direccion:'Pol. Industrial Nord, Valencia',ultimoContacto:hace(3),proximoContacto:hoy,notas:'Cliente desde hace 5 anios. Temporada alta abril-octubre.'},
+    {id:'c2',nombre:'Reformas Garcia e Hijos',tipo:'empresa',empresa:'Reformas Garcia e Hijos',telefono:'961 445 667',email:'garcia@reformasgarcia.com',ultimoContacto:hace(15),proximoContacto:en(-2),notas:'Pequeña empresa de reformas. Buen volumen mensual.'},
+    {id:'c3',nombre:'Pedro Martinez',tipo:'particular',telefono:'656 234 890',email:'pmartinez@gmail.com',ultimoContacto:hace(45),proximoContacto:en(7),notas:'Chalet en construccion. Potencial alto durante 6 meses.'},
+    {id:'c4',nombre:'Instalaciones Vidal SA',tipo:'empresa',empresa:'Instalaciones Vidal SA',telefono:'962 778 123',email:'compras@vidal.es',ultimoContacto:hace(2),proximoContacto:en(14),notas:'Especialistas en instalaciones electricas.'},
+    {id:'c5',nombre:'Ana Perez',tipo:'particular',telefono:'612 334 556',ultimoContacto:hace(90),proximoContacto:en(-5),notas:'Reforma cocina y baño. Presupuesto aprobado.'},
+    {id:'c6',nombre:'Mantenimientos Costa SA',tipo:'empresa',empresa:'Mantenimientos Costa SA',telefono:'965 334 112',email:'mcos@costasa.es',ultimoContacto:hace(7),proximoContacto:en(3),notas:'Contratos mantenimiento en hoteles de la Costa.'},
+  ];
+  ofertas=[
+    {id:'o1',titulo:'Suministro tornilleria almacen Alborch',producto:'Tornilleria variada acero inoxidable',clienteId:'c1',proveedorId:'p1',importeCoste:820,importeVenta:1280,margen:35.9,estado:'ganada',fecha:hace(20)},
+    {id:'o2',titulo:'Pintura interior nave industrial',producto:'Pintura plastica blanca 20L x 40 cubos',clienteId:'c1',proveedorId:'p2',importeCoste:1450,importeVenta:2100,margen:30.9,estado:'enviada',fecha:hace(5),notas:'Esperando confirmacion encargado de obra.'},
+    {id:'o3',titulo:'Material electrico reforma Garcia',producto:'Cable, canaletas y enchufes',clienteId:'c2',proveedorId:'p4',importeCoste:340,importeVenta:520,margen:34.6,estado:'pendiente',fecha:hace(3),notas:'Quieren precio cerrado antes del viernes.'},
+    {id:'o4',titulo:'Griferia baño chalet Martinez',producto:'Griferia Grohe serie Essence',clienteId:'c3',proveedorId:'p5',importeCoste:680,importeVenta:980,margen:30.6,estado:'pendiente',fecha:hace(1)},
+    {id:'o5',titulo:'Herramientas taller Vidal',producto:'Taladro Bosch, amoladora y accesorios',clienteId:'c4',proveedorId:'p3',importeCoste:290,importeVenta:420,margen:30.9,estado:'ganada',fecha:hace(30)},
+    {id:'o6',titulo:'Fontaneria comunidad vecinos',producto:'Tuberias y accesorios fontaneria',clienteId:'c6',proveedorId:'p5',importeCoste:1100,importeVenta:1600,margen:31.2,estado:'enviada',fecha:hace(8),notas:'Comunidad de 40 viviendas.'},
+    {id:'o7',titulo:'Reforma cocina Perez',producto:'Tornilleria, adhesivos y material varios',clienteId:'c5',proveedorId:'p1',importeCoste:180,importeVenta:260,margen:30.7,estado:'ganada',fecha:hace(60)},
   ];
 }
 </script>
