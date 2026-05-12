@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#1a2744"/>
+<meta name="description" content="Gestión de Proveedores - Suministros Macor"/>
+<link rel="manifest" href="manifest.json"/>
+<title>Macor · Proveedores</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+<style>
+:root {
+  --primary: #1a2744;
+  --primary-light: #243460;
+  --accent: #e8a020;
+  --accent-light: #f5c05a;
+  --bg: #f4f5f8;
+  --surface: #ffffff;
+  --surface2: #f9fafb;
+  --border: #e2e6ef;
+  --text: #1a2744;
+  --text2: #5a6480;
+  --text3: #9aa0b4;
+  --green: #1e9d6e;
+  --red: #d94040;
+  --amber: #e8a020;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(26,39,68,0.08);
+  --shadow-lg: 0 8px 32px rgba(26,39,68,0.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ---- TOPBAR ---- */
+.topbar{background:var(--primary);color:#fff;padding:0 1.5rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.topbar-brand{display:flex;align-items:center;gap:10px;font-size:1.1rem;font-weight:700;letter-spacing:-0.3px;}
+.topbar-brand span{color:var(--accent);}
+.topbar-logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:var(--primary);}
+.topbar-actions{display:flex;gap:8px;align-items:center;}
+.btn-icon{background:rgba(255,255,255,0.1);border:none;color:#fff;width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:background 0.15s;}
+.btn-icon:hover{background:rgba(255,255,255,0.2);}
+
+/* ---- NAV TABS ---- */
+.nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.nav-tab{padding:0 1.25rem;height:48px;display:flex;align-items:center;gap:8px;font-size:0.875rem;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.15s;flex-shrink:0;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--primary);border-bottom-color:var(--accent);}
+.nav-tab svg{width:16px;height:16px;}
+
+/* ---- MAIN ---- */
+.main{max-width:1200px;margin:0 auto;padding:1.5rem;}
+
+/* ---- CARDS ---- */
+.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:1.25rem;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+.card-title{font-size:1rem;font-weight:600;color:var(--text);}
+
+/* ---- STATS GRID ---- */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.stat{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:1rem 1.25rem;}
+.stat-label{font-size:0.75rem;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem;}
+.stat-value{font-size:1.75rem;font-weight:700;color:var(--text);}
+.stat-sub{font-size:0.75rem;color:var(--text2);margin-top:2px;}
+
+/* ---- BUTTONS ---- */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:0 1rem;height:36px;border-radius:8px;font-size:0.875rem;font-weight:500;cursor:pointer;transition:all 0.15s;border:1px solid transparent;text-decoration:none;}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary);}
+.btn-primary:hover{background:var(--primary-light);}
+.btn-accent{background:var(--accent);color:var(--primary);border-color:var(--accent);font-weight:600;}
+.btn-accent:hover{background:var(--accent-light);}
+.btn-ghost{background:transparent;color:var(--text2);border-color:var(--border);}
+.btn-ghost:hover{background:var(--surface2);color:var(--text);}
+.btn-danger{background:#fff0f0;color:var(--red);border-color:#fdd;}
+.btn-danger:hover{background:#ffe4e4;}
+.btn-sm{height:30px;padding:0 0.75rem;font-size:0.8rem;}
+
+/* ---- TABLE ---- */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:0.875rem;}
+thead th{padding:0.625rem 0.875rem;text-align:left;font-size:0.75rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);background:var(--surface2);}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
+tbody tr:hover{background:var(--surface2);}
+tbody td{padding:0.75rem 0.875rem;color:var(--text);}
+tbody tr:last-child{border-bottom:none;}
+
+/* ---- BADGES ---- */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600;}
+.badge-green{background:#e6f7f1;color:#0d7a54;}
+.badge-amber{background:#fff5e0;color:#8a5c00;}
+.badge-red{background:#ffeaea;color:#a82a2a;}
+.badge-blue{background:#e6f0fb;color:#1558a5;}
+.badge-gray{background:var(--surface2);color:var(--text2);}
+
+/* ---- SCORE BAR ---- */
+.score-bar{display:flex;align-items:center;gap:8px;}
+.score-bar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.score-bar-fill{height:100%;border-radius:3px;transition:width 0.3s;}
+
+/* ---- MODAL ---- */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--surface);border-radius:var(--radius);width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
+.modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+.modal-header h2{font-size:1rem;font-weight:600;}
+.modal-body{padding:1.5rem;}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;}
+
+/* ---- FORM ---- */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+@media(max-width:560px){.form-grid{grid-template-columns:1fr;}}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+label{font-size:0.8rem;font-weight:500;color:var(--text2);}
+input,select,textarea{width:100%;padding:0 0.75rem;height:38px;border:1px solid var(--border);border-radius:8px;font-size:0.875rem;color:var(--text);background:var(--surface);transition:border-color 0.15s;outline:none;font-family:inherit;}
+textarea{height:80px;padding:0.625rem 0.75rem;resize:vertical;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+.section-divider{grid-column:1/-1;font-size:0.8rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;padding-top:0.5rem;border-top:1px solid var(--border);margin-top:0.5rem;}
+
+/* ---- SEARCH & FILTERS ---- */
+.toolbar{display:flex;gap:0.75rem;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center;}
+.search-box{flex:1;min-width:200px;position:relative;}
+.search-box input{padding-left:2.25rem;}
+.search-box svg{position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text3);}
+.filter-select{height:38px;padding:0 0.75rem;border:1px solid var(--border);border-radius:8px;font-size:0.875rem;color:var(--text);background:var(--surface);cursor:pointer;}
+
+/* ---- RANKING VIEW ---- */
+.ranking-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.weight-control{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;}
+.weight-label{font-size:0.8rem;font-weight:600;color:var(--text2);margin-bottom:0.5rem;display:flex;justify-content:space-between;}
+.weight-label span{color:var(--primary);font-weight:700;}
+input[type=range]{width:100%;accent-color:var(--accent);}
+
+/* ---- RANKING CARD ---- */
+.rank-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;transition:box-shadow 0.15s;}
+.rank-card:hover{box-shadow:var(--shadow);}
+.rank-card.rank-1{border-color:var(--accent);background:#fffdf4;}
+.rank-number{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;flex-shrink:0;}
+.rank-1 .rank-number{background:var(--accent);color:var(--primary);}
+.rank-2 .rank-number{background:#e8edf5;color:var(--primary);}
+.rank-3 .rank-number{background:#f0ece6;color:#7a5000;}
+.rank-other .rank-number{background:var(--surface2);color:var(--text2);}
+.rank-info{flex:1;min-width:0;}
+.rank-name{font-weight:600;font-size:0.95rem;}
+.rank-meta{font-size:0.8rem;color:var(--text2);margin-top:2px;}
+.rank-score-big{font-size:1.5rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+
+/* ---- COMPARE ---- */
+.compare-grid{display:grid;gap:1rem;}
+.cmp-row{display:grid;gap:0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.cmp-cell{padding:0.625rem 0.875rem;font-size:0.875rem;border-right:1px solid var(--border);}
+.cmp-cell:last-child{border-right:none;}
+.cmp-head{background:var(--primary);color:#fff;font-weight:600;font-size:0.8rem;}
+.cmp-label{background:var(--surface2);font-weight:500;color:var(--text2);font-size:0.8rem;}
+.cmp-best{background:#e6f7f1;}
+
+/* ---- EMPTY ---- */
+.empty{text-align:center;padding:3rem 1rem;color:var(--text3);}
+.empty svg{margin:0 auto 1rem;display:block;opacity:0.3;}
+.empty p{font-size:0.9rem;}
+
+/* ---- TOAST ---- */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--primary);color:#fff;padding:0.75rem 1.25rem;border-radius:10px;font-size:0.875rem;font-weight:500;z-index:300;transform:translateY(80px);opacity:0;transition:all 0.3s;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{background:var(--green);}
+.toast.error{background:var(--red);}
+
+/* ---- MOBILE ---- */
+@media(max-width:600px){
+  .main{padding:1rem;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .topbar{padding:0 1rem;}
+  .modal-body{padding:1rem;}
+  .form-grid{gap:0.75rem;}
+}
+
+/* ---- LOADING ---- */
+.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:2rem;color:var(--text2);}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ---- CONFIG SCREEN ---- */
+.config-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:var(--bg);}
+.config-box{background:var(--surface);border-radius:16px;border:1px solid var(--border);padding:2.5rem;max-width:480px;width:100%;box-shadow:var(--shadow-lg);}
+.config-logo{width:56px;height:56px;background:var(--primary);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;}
+.config-logo span{font-size:22px;font-weight:900;color:var(--accent);}
+</style>
+</head>
+<body>
+
+<!-- Config screen (shown if no Firebase config) -->
+<div id="config-screen" class="config-screen" style="display:none;">
+  <div class="config-box">
+    <div class="config-logo"><span>M</span></div>
+    <h1 style="text-align:center;font-size:1.25rem;margin-bottom:0.5rem;">Configuración inicial</h1>
+    <p style="text-align:center;color:var(--text2);font-size:0.875rem;margin-bottom:2rem;">Pega aquí la configuración de Firebase para activar la sincronización</p>
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>API Key</label>
+      <input id="cfg-apiKey" placeholder="AIzaSy..." />
+    </div>
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>Auth Domain</label>
+      <input id="cfg-authDomain" placeholder="tu-proyecto.firebaseapp.com" />
+    </div>
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>Project ID</label>
+      <input id="cfg-projectId" placeholder="tu-proyecto" />
+    </div>
+    <div class="form-group" style="margin-bottom:1.5rem;">
+      <label>App ID</label>
+      <input id="cfg-appId" placeholder="1:123456:web:abc..." />
+    </div>
+    <button class="btn btn-accent" style="width:100%;justify-content:center;" onclick="saveConfig()">Guardar y conectar</button>
+    <p style="text-align:center;margin-top:1rem;font-size:0.8rem;color:var(--text3);">
+      <a href="#" onclick="useDemo()" style="color:var(--primary);">Usar modo demo (sin guardar)</a>
+    </p>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app" style="display:none;">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo">M</div>
+      Macor <span>·&nbsp;Proveedores</span>
+    </div>
+    <div class="topbar-actions">
+      <span id="sync-indicator" style="font-size:0.75rem;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:4px;">
+        <span id="sync-dot" style="width:7px;height:7px;border-radius:50%;background:#9aa0b4;display:inline-block;"></span>
+        <span id="sync-text">Conectando…</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-tab active" onclick="showTab('lista')" id="tab-lista">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      Lista
+    </div>
+    <div class="nav-tab" onclick="showTab('ranking')" id="tab-ranking">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      Ranking
+    </div>
+    <div class="nav-tab" onclick="showTab('comparar')" id="tab-comparar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+      Comparar
+    </div>
+    <div class="nav-tab" onclick="showTab('estadisticas')" id="tab-estadisticas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>
+      Estadísticas
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- ====== LISTA ====== -->
+    <div id="view-lista">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+        <div>
+          <h1 style="font-size:1.25rem;font-weight:700;">Proveedores</h1>
+          <p style="font-size:0.875rem;color:var(--text2);margin-top:2px;" id="provider-count">Cargando…</p>
+        </div>
+        <button class="btn btn-accent" onclick="openModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo proveedor
+        </button>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Buscar por nombre, categoría…" id="search-input" oninput="renderLista()"/>
+        </div>
+        <select class="filter-select" id="filter-categoria" onchange="renderLista()">
+          <option value="">Todas las categorías</option>
+        </select>
+        <select class="filter-select" id="sort-by" onchange="renderLista()">
+          <option value="nombre">Ordenar: Nombre</option>
+          <option value="precio">Ordenar: Precio</option>
+          <option value="entrega">Ordenar: Entrega</option>
+          <option value="margen">Ordenar: Margen</option>
+          <option value="valoracion">Ordenar: Valoración</option>
+        </select>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Proveedor</th>
+                <th>Categoría</th>
+                <th>Precio medio</th>
+                <th>Entrega</th>
+                <th>Margen %</th>
+                <th>Pago</th>
+                <th>Fiabilidad</th>
+                <th>Score</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="lista-tbody">
+              <tr><td colspan="9"><div class="loading"><div class="spinner"></div> Cargando…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== RANKING ====== -->
+    <div id="view-ranking" style="display:none;">
+      <div style="margin-bottom:1.5rem;">
+        <h1 style="font-size:1.25rem;font-weight:700;">Ranking inteligente</h1>
+        <p style="font-size:0.875rem;color:var(--text2);margin-top:2px;">Ajusta los pesos según lo que más te importe. El ranking se actualiza en tiempo real.</p>
+      </div>
+
+      <div class="ranking-controls" id="weight-controls"></div>
+
+      <div id="ranking-list" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
+    </div>
+
+    <!-- ====== COMPARAR ====== -->
+    <div id="view-comparar" style="display:none;">
+      <div style="margin-bottom:1.5rem;">
+        <h1 style="font-size:1.25rem;font-weight:700;">Comparar proveedores</h1>
+        <p style="font-size:0.875rem;color:var(--text2);margin-top:2px;">Selecciona 2 o más proveedores para ver una comparativa detallada.</p>
+      </div>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;" id="compare-selector"></div>
+      <div id="compare-table"></div>
+    </div>
+
+    <!-- ====== ESTADISTICAS ====== -->
+    <div id="view-estadisticas" style="display:none;">
+      <div style="margin-bottom:1.5rem;">
+        <h1 style="font-size:1.25rem;font-weight:700;">Estadísticas</h1>
+      </div>
+      <div class="stats-grid" id="stats-grid"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" id="stats-charts">
+        <div class="card" id="stats-top5"></div>
+        <div class="card" id="stats-categorias"></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODAL: Nuevo / Editar proveedor -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Nuevo proveedor</h2>
+      <button class="btn-icon" onclick="closeModal()" style="background:var(--surface2);color:var(--text);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="section-divider" style="margin-top:0;border-top:none;">Información general</div>
+
+        <div class="form-group">
+          <label>Nombre empresa *</label>
+          <input id="f-nombre" placeholder="Ej: Distribuidora García SL" />
+        </div>
+        <div class="form-group">
+          <label>Categoría / Producto</label>
+          <input id="f-categoria" placeholder="Ej: Tornillería, Pintura…" list="cat-list" />
+          <datalist id="cat-list"></datalist>
+        </div>
+        <div class="form-group">
+          <label>Persona de contacto</label>
+          <input id="f-contacto" placeholder="Nombre del comercial" />
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input id="f-telefono" placeholder="600 000 000" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input id="f-email" placeholder="contacto@empresa.com" type="email"/>
+        </div>
+        <div class="form-group">
+          <label>Web</label>
+          <input id="f-web" placeholder="www.empresa.com" />
+        </div>
+
+        <div class="section-divider">Condiciones comerciales</div>
+
+        <div class="form-group">
+          <label>Precio medio (€)</label>
+          <input id="f-precio" type="number" min="0" step="0.01" placeholder="0.00" />
+        </div>
+        <div class="form-group">
+          <label>Margen comercial (%)</label>
+          <input id="f-margen" type="number" min="0" max="100" step="0.1" placeholder="25" />
+        </div>
+        <div class="form-group">
+          <label>Descuento habitual (%)</label>
+          <input id="f-descuento" type="number" min="0" max="100" step="0.1" placeholder="5" />
+        </div>
+        <div class="form-group">
+          <label>Rappel anual (%)</label>
+          <input id="f-rappel" type="number" min="0" step="0.1" placeholder="0" />
+        </div>
+        <div class="form-group">
+          <label>Pedido mínimo (€)</label>
+          <input id="f-pedido-min" type="number" min="0" step="1" placeholder="0" />
+        </div>
+        <div class="form-group">
+          <label>Forma de pago</label>
+          <select id="f-pago">
+            <option value="">— Seleccionar —</option>
+            <option>Contado</option>
+            <option>30 días</option>
+            <option>60 días</option>
+            <option>90 días</option>
+            <option>120 días</option>
+            <option>Anticipo</option>
+          </select>
+        </div>
+
+        <div class="section-divider">Logística</div>
+
+        <div class="form-group">
+          <label>Tiempo de entrega (días)</label>
+          <input id="f-entrega" type="number" min="0" step="1" placeholder="3" />
+        </div>
+        <div class="form-group">
+          <label>Portes gratis desde (€)</label>
+          <input id="f-portes" type="number" min="0" step="1" placeholder="200" />
+        </div>
+        <div class="form-group">
+          <label>Coste portes (€)</label>
+          <input id="f-portes-coste" type="number" min="0" step="0.01" placeholder="8.50" />
+        </div>
+        <div class="form-group">
+          <label>Almacén / Zona</label>
+          <input id="f-zona" placeholder="Madrid, Valencia…" />
+        </div>
+
+        <div class="section-divider">Calidad y valoración</div>
+
+        <div class="form-group">
+          <label>Fiabilidad (1–10)</label>
+          <input id="f-fiabilidad" type="number" min="1" max="10" step="1" placeholder="8" />
+        </div>
+        <div class="form-group">
+          <label>Calidad producto (1–10)</label>
+          <input id="f-calidad" type="number" min="1" max="10" step="1" placeholder="8" />
+        </div>
+        <div class="form-group">
+          <label>Atención comercial (1–10)</label>
+          <input id="f-atencion" type="number" min="1" max="10" step="1" placeholder="8" />
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select id="f-estado">
+            <option value="activo">Activo</option>
+            <option value="pausado">Pausado</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+
+        <div class="form-group full">
+          <label>Notas</label>
+          <textarea id="f-notas" placeholder="Condiciones especiales, observaciones…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-accent" onclick="saveProveedor()">Guardar proveedor</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+//  FIREBASE CONFIG
+// =============================================
+let db = null;
+let demoMode = false;
+let demoData = [];
+
+const WEIGHTS_DEFAULTS = {precio:30, margen:25, entrega:20, fiabilidad:15, calidad:10};
+
+function getSavedConfig(){
+  try{ return JSON.parse(localStorage.getItem('macor_firebase_cfg')||'null'); }
+  catch{ return null; }
+}
+
+function saveConfig(){
+  const cfg = {
+    apiKey: document.getElementById('cfg-apiKey').value.trim(),
+    authDomain: document.getElementById('cfg-authDomain').value.trim(),
+    projectId: document.getElementById('cfg-projectId').value.trim(),
+    appId: document.getElementById('cfg-appId').value.trim(),
+  };
+  if(!cfg.apiKey || !cfg.projectId){ showToast('Completa al menos API Key y Project ID','error'); return; }
+  localStorage.setItem('macor_firebase_cfg', JSON.stringify(cfg));
+  initFirebase(cfg);
+}
+
+function useDemo(){
+  demoMode = true;
+  demoData = getSampleData();
+  document.getElementById('config-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('sync-dot').style.background='#e8a020';
+  document.getElementById('sync-text').textContent='Modo demo';
+  initApp();
+}
+
+function initFirebase(cfg){
+  try{
+    if(firebase.apps.length){ firebase.app(); }
+    else{ firebase.initializeApp(cfg); }
+    db = firebase.firestore();
+    document.getElementById('config-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('sync-dot').style.background='#1e9d6e';
+    document.getElementById('sync-text').textContent='Sincronizado';
+    initApp();
+  } catch(e){
+    showToast('Error conectando con Firebase: '+e.message,'error');
+  }
+}
+
+// =============================================
+//  APP STATE
+// =============================================
+let proveedores = [];
+let editingId = null;
+let weights = {...WEIGHTS_DEFAULTS};
+let compareSelected = new Set();
+
+// =============================================
+//  INIT
+// =============================================
+window.addEventListener('DOMContentLoaded', ()=>{
+  const cfg = getSavedConfig();
+  if(cfg && cfg.apiKey){
+    document.getElementById('app').style.display='block';
+    initFirebase(cfg);
+  } else {
+    document.getElementById('config-screen').style.display='flex';
+  }
+});
+
+function initApp(){
+  loadWeights();
+  renderWeightControls();
+  loadProveedores();
+  showTab('lista');
+}
+
+// =============================================
+//  DATA LAYER
+// =============================================
+function loadProveedores(){
+  if(demoMode){
+    proveedores = [...demoData];
+    onDataUpdate();
+    return;
+  }
+  if(!db) return;
+  db.collection('proveedores').orderBy('nombre').onSnapshot(snap=>{
+    proveedores = snap.docs.map(d=>({id:d.id,...d.data()}));
+    onDataUpdate();
+    document.getElementById('sync-dot').style.background='#1e9d6e';
+    document.getElementById('sync-text').textContent='Sincronizado';
+  }, err=>{
+    document.getElementById('sync-dot').style.background='#d94040';
+    document.getElementById('sync-text').textContent='Error sync';
+  });
+}
+
+function onDataUpdate(){
+  renderLista();
+  renderRanking();
+  renderCompareSelector();
+  renderEstadisticas();
+  updateCategoryFilter();
+}
+
+async function saveProveedor(){
+  const nombre = document.getElementById('f-nombre').value.trim();
+  if(!nombre){ showToast('El nombre es obligatorio','error'); return; }
+
+  const data = {
+    nombre,
+    categoria: v('f-categoria'),
+    contacto: v('f-contacto'),
+    telefono: v('f-telefono'),
+    email: v('f-email'),
+    web: v('f-web'),
+    precio: num('f-precio'),
+    margen: num('f-margen'),
+    descuento: num('f-descuento'),
+    rappel: num('f-rappel'),
+    pedidoMin: num('f-pedido-min'),
+    pago: v('f-pago'),
+    entrega: num('f-entrega'),
+    portesGratis: num('f-portes'),
+    portesCoste: num('f-portes-coste'),
+    zona: v('f-zona'),
+    fiabilidad: num('f-fiabilidad'),
+    calidad: num('f-calidad'),
+    atencion: num('f-atencion'),
+    estado: v('f-estado') || 'activo',
+    notas: v('f-notas'),
+    updatedAt: new Date().toISOString(),
+  };
+
+  if(demoMode){
+    if(editingId){
+      const idx = demoData.findIndex(p=>p.id===editingId);
+      if(idx>=0) demoData[idx]={...demoData[idx],...data};
+    } else {
+      demoData.push({id:'demo_'+Date.now(),...data, createdAt:new Date().toISOString()});
+    }
+    proveedores = [...demoData];
+    onDataUpdate();
+    closeModal();
+    showToast('Proveedor guardado ✓','success');
+    return;
+  }
+
+  try{
+    if(editingId){
+      await db.collection('proveedores').doc(editingId).update(data);
+    } else {
+      data.createdAt = new Date().toISOString();
+      await db.collection('proveedores').add(data);
+    }
+    closeModal();
+    showToast('Proveedor guardado ✓','success');
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+}
+
+async function deleteProveedor(id){
+  if(!confirm('¿Eliminar este proveedor?')) return;
+  if(demoMode){
+    demoData = demoData.filter(p=>p.id!==id);
+    proveedores = [...demoData];
+    onDataUpdate();
+    showToast('Proveedor eliminado');
+    return;
+  }
+  try{
+    await db.collection('proveedores').doc(id).delete();
+    showToast('Proveedor eliminado');
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+}
+
+// =============================================
+//  HELPERS
+// =============================================
+function v(id){ return document.getElementById(id).value.trim(); }
+function num(id){ const n=parseFloat(document.getElementById(id).value); return isNaN(n)?null:n; }
+
+function scoreProveedor(p, w){
+  // Normalize each metric 0-100
+  let s = 0, total = 0;
+  const add = (val, max, weight, invert)=>{
+    if(val===null||val===undefined||val==='') return;
+    let norm = Math.min(100, Math.max(0, invert ? Math.max(0,max-val)/max*100 : val/max*100));
+    s += norm * weight;
+    total += weight;
+  };
+  // Precio: lower is better (inverted), assume max reference 1000€
+  if(p.precio) add(p.precio, 1000, w.precio||0, true);
+  // Margen: higher is better, max 60%
+  add(p.margen, 60, w.margen||0, false);
+  // Entrega: lower is better, max 30 days
+  add(p.entrega, 30, w.entrega||0, true);
+  // Fiabilidad 1-10
+  add(p.fiabilidad, 10, w.fiabilidad||0, false);
+  // Calidad 1-10
+  add(p.calidad, 10, w.calidad||0, false);
+
+  return total ? Math.round(s/total) : 0;
+}
+
+function getScoreColor(score){
+  if(score>=70) return '#1e9d6e';
+  if(score>=45) return '#e8a020';
+  return '#d94040';
+}
+
+function getBadgeEstado(estado){
+  const map={activo:'badge-green',pausado:'badge-amber',inactivo:'badge-gray'};
+  return `<span class="badge ${map[estado]||'badge-gray'}">${estado||'activo'}</span>`;
+}
+
+// =============================================
+//  TABS
+// =============================================
+function showTab(tab){
+  ['lista','ranking','comparar','estadisticas'].forEach(t=>{
+    document.getElementById('view-'+t).style.display = t===tab?'block':'none';
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+  if(tab==='ranking') renderRanking();
+  if(tab==='estadisticas') renderEstadisticas();
+}
+
+// =============================================
+//  LISTA
+// =============================================
+function updateCategoryFilter(){
+  const cats = [...new Set(proveedores.map(p=>p.categoria).filter(Boolean))].sort();
+  const sel = document.getElementById('filter-categoria');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Todas las categorías</option>';
+  cats.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; if(c===cur) o.selected=true; sel.appendChild(o); });
+
+  const dl = document.getElementById('cat-list');
+  dl.innerHTML = cats.map(c=>`<option value="${c}">`).join('');
+}
+
+function renderLista(){
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const cat = document.getElementById('filter-categoria').value;
+  const sort = document.getElementById('sort-by').value;
+
+  let list = proveedores.filter(p=>{
+    if(cat && p.categoria!==cat) return false;
+    if(q && !(`${p.nombre} ${p.categoria} ${p.contacto} ${p.zona}`).toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const w = {...WEIGHTS_DEFAULTS};
+  const sortFns = {
+    nombre: (a,b)=>a.nombre.localeCompare(b.nombre),
+    precio: (a,b)=>(a.precio||9999)-(b.precio||9999),
+    entrega: (a,b)=>(a.entrega||999)-(b.entrega||999),
+    margen: (a,b)=>(b.margen||0)-(a.margen||0),
+    valoracion: (a,b)=>scoreProveedor(b,w)-scoreProveedor(a,w),
+  };
+  list.sort(sortFns[sort]||sortFns.nombre);
+
+  document.getElementById('provider-count').textContent = `${list.length} proveedor${list.length!==1?'es':''}`;
+
+  const tbody = document.getElementById('lista-tbody');
+  if(!list.length){
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg><p>No hay proveedores. Añade el primero.</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(p=>{
+    const score = scoreProveedor(p,w);
+    const col = getScoreColor(score);
+    return `<tr>
+      <td>
+        <div style="font-weight:600;font-size:0.875rem;">${esc(p.nombre)}</div>
+        ${p.contacto?`<div style="font-size:0.75rem;color:var(--text3);">${esc(p.contacto)}</div>`:''}
+      </td>
+      <td>${p.categoria?`<span class="badge badge-blue">${esc(p.categoria)}</span>`:'-'}</td>
+      <td>${p.precio!=null?p.precio.toFixed(2)+' €':'-'}</td>
+      <td>${p.entrega!=null?p.entrega+' días':'-'}</td>
+      <td>${p.margen!=null?`<span style="font-weight:600;color:${p.margen>=30?'var(--green)':p.margen>=15?'var(--amber)':'var(--red)'};">${p.margen}%</span>`:'-'}</td>
+      <td><span style="font-size:0.8rem;">${p.pago||'-'}</span></td>
+      <td>${p.fiabilidad!=null?`<div class="score-bar"><div class="score-bar-track"><div class="score-bar-fill" style="width:${p.fiabilidad*10}%;background:${getScoreColor(p.fiabilidad*10)};"></div></div><span style="font-size:0.8rem;min-width:16px;">${p.fiabilidad}</span></div>`:'-'}</td>
+      <td><span style="font-weight:700;font-size:1rem;color:${col};">${score}</span></td>
+      <td>
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn-ghost btn-sm" onclick='openModalEdit(${JSON.stringify(p.id)})'>Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProveedor('${p.id}')">Borrar</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+// =============================================
+//  MODAL
+// =============================================
+function openModal(){
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Nuevo proveedor';
+  ['nombre','categoria','contacto','telefono','email','web','notas','zona'].forEach(f=>document.getElementById('f-'+f).value='');
+  ['precio','margen','descuento','rappel','pedido-min','entrega','portes','portes-coste','fiabilidad','calidad','atencion'].forEach(f=>document.getElementById('f-'+f).value='');
+  document.getElementById('f-pago').value='';
+  document.getElementById('f-estado').value='activo';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function openModalEdit(id){
+  const p = proveedores.find(x=>x.id===id);
+  if(!p) return;
+  editingId = id;
+  document.getElementById('modal-title').textContent = 'Editar proveedor';
+  setV('f-nombre', p.nombre);
+  setV('f-categoria', p.categoria);
+  setV('f-contacto', p.contacto);
+  setV('f-telefono', p.telefono);
+  setV('f-email', p.email);
+  setV('f-web', p.web);
+  setV('f-zona', p.zona);
+  setV('f-notas', p.notas);
+  setV('f-precio', p.precio);
+  setV('f-margen', p.margen);
+  setV('f-descuento', p.descuento);
+  setV('f-rappel', p.rappel);
+  setV('f-pedido-min', p.pedidoMin);
+  setV('f-pago', p.pago);
+  setV('f-entrega', p.entrega);
+  setV('f-portes', p.portesGratis);
+  setV('f-portes-coste', p.portesCoste);
+  setV('f-fiabilidad', p.fiabilidad);
+  setV('f-calidad', p.calidad);
+  setV('f-atencion', p.atencion);
+  setV('f-estado', p.estado||'activo');
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function setV(id, val){ document.getElementById(id).value = val!=null&&val!==undefined?val:''; }
+
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); }
+
+document.getElementById('modal-overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modal-overlay')) closeModal();
+});
+
+// =============================================
+//  RANKING
+// =============================================
+const WEIGHT_LABELS = {
+  precio: 'Precio bajo',
+  margen: 'Margen alto',
+  entrega: 'Entrega rápida',
+  fiabilidad: 'Fiabilidad',
+  calidad: 'Calidad producto',
+};
+
+function loadWeights(){
+  try{ const s=JSON.parse(localStorage.getItem('macor_weights')||'null'); if(s) weights={...WEIGHTS_DEFAULTS,...s}; }
+  catch{}
+}
+function saveWeights(){ localStorage.setItem('macor_weights', JSON.stringify(weights)); }
+
+function renderWeightControls(){
+  const el = document.getElementById('weight-controls');
+  el.innerHTML = Object.keys(weights).map(k=>`
+    <div class="weight-control">
+      <div class="weight-label">${WEIGHT_LABELS[k]||k} <span id="wv-${k}">${weights[k]}%</span></div>
+      <input type="range" min="0" max="100" value="${weights[k]}" step="5"
+        oninput="weights['${k}']=+this.value;document.getElementById('wv-${k}').textContent=this.value+'%';saveWeights();renderRanking();" />
+    </div>
+  `).join('');
+}
+
+function renderRanking(){
+  const list = [...proveedores]
+    .filter(p=>p.estado!=='inactivo')
+    .map(p=>({...p, score: scoreProveedor(p, weights)}))
+    .sort((a,b)=>b.score-a.score);
+
+  const el = document.getElementById('ranking-list');
+  if(!list.length){
+    el.innerHTML = `<div class="empty"><p>Sin proveedores activos todavía.</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map((p,i)=>{
+    const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+    const col = getScoreColor(p.score);
+    const medals = ['🥇','🥈','🥉'];
+    return `<div class="rank-card ${rankClass}">
+      <div class="rank-number">${medals[i]||i+1}</div>
+      <div class="rank-info">
+        <div class="rank-name">${esc(p.nombre)}</div>
+        <div class="rank-meta">
+          ${p.categoria?`<span class="badge badge-blue" style="margin-right:4px;">${esc(p.categoria)}</span>`:''}
+          ${p.entrega!=null?`⏱ ${p.entrega}d`:''}
+          ${p.margen!=null?` · ${p.margen}% margen`:''}
+          ${p.pago?` · ${p.pago}`:''}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:8px;">
+          <div style="font-size:0.75rem;color:var(--text2);">Score</div>
+          <div class="score-bar-track" style="flex:1;height:8px;">
+            <div class="score-bar-fill" style="width:${p.score}%;background:${col};"></div>
+          </div>
+          <div style="font-size:0.8rem;font-weight:600;color:${col};min-width:32px;">${p.score}/100</div>
+        </div>
+      </div>
+      <div class="rank-score-big" style="color:${col};">${p.score}</div>
+    </div>`;
+  }).join('');
+}
+
+// =============================================
+//  COMPARAR
+// =============================================
+function renderCompareSelector(){
+  const el = document.getElementById('compare-selector');
+  el.innerHTML = proveedores.map(p=>{
+    const sel = compareSelected.has(p.id);
+    return `<button class="btn ${sel?'btn-primary':'btn-ghost'}" onclick="toggleCompare('${p.id}')">${esc(p.nombre)}</button>`;
+  }).join('');
+  renderCompareTable();
+}
+
+function toggleCompare(id){
+  if(compareSelected.has(id)) compareSelected.delete(id);
+  else compareSelected.add(id);
+  renderCompareSelector();
+}
+
+function renderCompareTable(){
+  const sel = proveedores.filter(p=>compareSelected.has(p.id));
+  const el = document.getElementById('compare-table');
+  if(sel.length<2){ el.innerHTML=`<div class="empty"><p>Selecciona al menos 2 proveedores arriba.</p></div>`; return; }
+
+  const fields = [
+    {key:'precio', label:'Precio medio (€)', fmt:v=>v!=null?v.toFixed(2)+' €':'-', better:'min'},
+    {key:'margen', label:'Margen (%)', fmt:v=>v!=null?v+'%':'-', better:'max'},
+    {key:'descuento', label:'Descuento (%)', fmt:v=>v!=null?v+'%':'-', better:'max'},
+    {key:'rappel', label:'Rappel anual (%)', fmt:v=>v!=null?v+'%':'-', better:'max'},
+    {key:'entrega', label:'Tiempo entrega (días)', fmt:v=>v!=null?v+' días':'-', better:'min'},
+    {key:'portesGratis', label:'Portes gratis desde (€)', fmt:v=>v!=null?v+'€':'-', better:'min'},
+    {key:'portesCoste', label:'Coste portes (€)', fmt:v=>v!=null?v+'€':'-', better:'min'},
+    {key:'pedidoMin', label:'Pedido mínimo (€)', fmt:v=>v!=null?v+'€':'-', better:'min'},
+    {key:'pago', label:'Forma de pago', fmt:v=>v||'-', better:null},
+    {key:'fiabilidad', label:'Fiabilidad (1-10)', fmt:v=>v!=null?v:'-', better:'max'},
+    {key:'calidad', label:'Calidad (1-10)', fmt:v=>v!=null?v:'-', better:'max'},
+    {key:'atencion', label:'Atención comercial (1-10)', fmt:v=>v!=null?v:'-', better:'max'},
+    {key:'zona', label:'Zona / Almacén', fmt:v=>v||'-', better:null},
+    {key:'score', label:'⭐ Score global', fmt:v=>v+'/100', better:'max'},
+  ];
+
+  const w = {...WEIGHTS_DEFAULTS};
+  sel.forEach(p=>{ p._score = scoreProveedor(p,w); });
+
+  const cols = `grid-template-columns: 160px ${sel.map(()=>'1fr').join(' ')}`;
+
+  const rows = fields.map(f=>{
+    const vals = sel.map(p=>f.key==='score'?p._score:p[f.key]);
+    const numVals = vals.filter(v=>v!=null&&v!==''&&!isNaN(v));
+    let bestVal = null;
+    if(f.better==='max' && numVals.length) bestVal = Math.max(...numVals);
+    if(f.better==='min' && numVals.length) bestVal = Math.min(...numVals);
+
+    const cells = sel.map((p,i)=>{
+      const val = f.key==='score'?p._score:p[f.key];
+      const isBest = bestVal!==null && parseFloat(val)===bestVal;
+      return `<div class="cmp-cell${isBest?' cmp-best':''}" style="${sel.length>1?cols.replace('160px ','').replace('1fr',`1fr`):''}">${f.fmt(val)}${isBest?` ✓`:''}</div>`;
+    }).join('');
+
+    return `<div class="cmp-row" style="${cols};">
+      <div class="cmp-cell cmp-label">${f.label}</div>
+      ${cells}
+    </div>`;
+  }).join('');
+
+  const header = `<div class="cmp-row" style="${cols};margin-bottom:0.5rem;">
+    <div class="cmp-cell cmp-head" style="border-radius:var(--radius) 0 0 var(--radius);">Característica</div>
+    ${sel.map((p,i)=>`<div class="cmp-cell cmp-head" style="${i===sel.length-1?'border-radius:0 var(--radius) var(--radius) 0;':''}">${esc(p.nombre)}</div>`).join('')}
+  </div>`;
+
+  el.innerHTML = `<div class="compare-grid">${header}${rows}</div>`;
+}
+
+// =============================================
+//  ESTADÍSTICAS
+// =============================================
+function renderEstadisticas(){
+  const activos = proveedores.filter(p=>p.estado!=='inactivo');
+  const w = {...WEIGHTS_DEFAULTS};
+  const scores = activos.map(p=>scoreProveedor(p,w));
+  const avgScore = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  const avgMargen = activos.filter(p=>p.margen!=null).length ?
+    (activos.filter(p=>p.margen!=null).reduce((a,p)=>a+p.margen,0)/activos.filter(p=>p.margen!=null).length).toFixed(1) : '-';
+  const avgEntrega = activos.filter(p=>p.entrega!=null).length ?
+    (activos.filter(p=>p.entrega!=null).reduce((a,p)=>a+p.entrega,0)/activos.filter(p=>p.entrega!=null).length).toFixed(1) : '-';
+  const cats = [...new Set(proveedores.map(p=>p.categoria).filter(Boolean))];
+
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat"><div class="stat-label">Proveedores totales</div><div class="stat-value">${proveedores.length}</div><div class="stat-sub">${activos.length} activos</div></div>
+    <div class="stat"><div class="stat-label">Score medio</div><div class="stat-value" style="color:${getScoreColor(avgScore)};">${avgScore}</div><div class="stat-sub">sobre 100</div></div>
+    <div class="stat"><div class="stat-label">Margen medio</div><div class="stat-value">${avgMargen}%</div><div class="stat-sub">en proveedores activos</div></div>
+    <div class="stat"><div class="stat-label">Entrega media</div><div class="stat-value">${avgEntrega}d</div><div class="stat-sub">días promedio</div></div>
+    <div class="stat"><div class="stat-label">Categorías</div><div class="stat-value">${cats.length}</div><div class="stat-sub">distintas</div></div>
+  `;
+
+  // Top 5
+  const top5 = [...activos].map(p=>({...p,score:scoreProveedor(p,w)})).sort((a,b)=>b.score-a.score).slice(0,5);
+  document.getElementById('stats-top5').innerHTML = `
+    <div class="card-title" style="margin-bottom:1rem;">Top 5 proveedores</div>
+    ${top5.map((p,i)=>`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="width:20px;font-size:0.8rem;font-weight:700;color:var(--text3);">${i+1}</span>
+        <span style="flex:1;font-size:0.875rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.nombre)}</span>
+        <div class="score-bar-track" style="width:80px;height:6px;flex-shrink:0;"><div class="score-bar-fill" style="width:${p.score}%;background:${getScoreColor(p.score)};"></div></div>
+        <span style="font-size:0.8rem;font-weight:700;min-width:32px;text-align:right;color:${getScoreColor(p.score)};">${p.score}</span>
+      </div>
+    `).join('')}
+  `;
+
+  // Por categoría
+  const byCat = {};
+  proveedores.forEach(p=>{ const c=p.categoria||'Sin categoría'; if(!byCat[c]) byCat[c]=0; byCat[c]++; });
+  const catEntries = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('stats-categorias').innerHTML = `
+    <div class="card-title" style="margin-bottom:1rem;">Por categoría</div>
+    ${catEntries.map(([cat,n])=>`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="flex:1;font-size:0.875rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(cat)}</span>
+        <div class="score-bar-track" style="width:80px;height:6px;flex-shrink:0;"><div class="score-bar-fill" style="width:${Math.round(n/proveedores.length*100)}%;background:var(--primary);"></div></div>
+        <span style="font-size:0.8rem;font-weight:700;min-width:20px;text-align:right;">${n}</span>
+      </div>
+    `).join('')}
+  `;
+}
+
+// =============================================
+//  TOAST
+// =============================================
+function showToast(msg, type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// =============================================
+//  DEMO DATA
+// =============================================
+function getSampleData(){
+  return [
+    {id:'d1',nombre:'Distribuciones Hernández SL',categoria:'Tornillería',contacto:'Luis Hernández',telefono:'961 234 567',email:'luis@hernandez.com',precio:12.50,margen:32,descuento:8,rappel:2,pedidoMin:150,pago:'30 días',entrega:2,portesGratis:200,portesCoste:6,zona:'Valencia',fiabilidad:9,calidad:9,atencion:8,estado:'activo',notas:'Muy puntual. Rappel en diciembre.'},
+    {id:'d2',nombre:'Almacenes Pinto',categoria:'Pintura',contacto:'Ana Pinto',telefono:'963 456 789',email:'ana@pinto.es',precio:28.00,margen:28,descuento:5,rappel:1,pedidoMin:300,pago:'60 días',entrega:4,portesGratis:350,portesCoste:9,zona:'Madrid',fiabilidad:7,calidad:8,atencion:9,estado:'activo',notas:'Buenos precios en temporada baja.'},
+    {id:'d3',nombre:'Tecno Ferretería López',categoria:'Herramientas',contacto:'Carlos López',telefono:'960 111 222',email:'c.lopez@tecno.com',precio:45.00,margen:22,descuento:10,rappel:3,pedidoMin:500,pago:'90 días',entrega:1,portesGratis:500,portesCoste:12,zona:'Barcelona',fiabilidad:8,calidad:9,atencion:7,estado:'activo',notas:'Entrega en 24h. Mínimo alto.'},
+    {id:'d4',nombre:'Suministros Morales',categoria:'Tornillería',contacto:'Pedro Morales',telefono:'965 333 444',precio:10.00,margen:38,descuento:12,rappel:4,pedidoMin:100,pago:'30 días',entrega:3,portesGratis:150,portesCoste:5,zona:'Alicante',fiabilidad:8,calidad:7,atencion:8,estado:'activo',notas:'Mejor precio del mercado en tornillería estándar.'},
+    {id:'d5',nombre:'Pintures Ribes',categoria:'Pintura',contacto:'Marta Ribes',telefono:'938 555 666',email:'mribes@ribes.cat',precio:22.00,margen:35,descuento:7,rappel:2,pedidoMin:200,pago:'30 días',entrega:5,portesGratis:250,portesCoste:8,zona:'Terrassa',fiabilidad:9,calidad:9,atencion:9,estado:'activo',notas:'Productos premium. Muy buena atención.'},
+  ];
+}
+</script>
+<script>if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>
