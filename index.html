@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root{
@@ -390,6 +391,20 @@ body.present-mode td:has([style*="font-family:var(--mono)"]) { filter: blur(4px)
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
       Buscar proveedor
     </div>
+    <div class="sb-sec">Ventas</div>
+    <div class="sbi" id="sbi-presupuestos" onclick="goTo('presupuestos')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Presupuestos
+      <span class="sbi-bdg" id="bdg-pres" style="display:none;"></span>
+    </div>
+    <div class="sbi" id="sbi-clientes" onclick="goTo('clientes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Clientes
+    </div>
+    <div class="sbi" id="sbi-rentabilidad" onclick="goTo('rentabilidad')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Rentabilidad
+    </div>
     <div class="sb-sec">Inteligencia</div>
     <div class="sbi" id="sbi-asistente" onclick="goTo('asistente')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -427,6 +442,7 @@ body.present-mode td:has([style*="font-family:var(--mono)"]) { filter: blur(4px)
   <div class="fab-menu" id="fab-menu">
     <div class="fab-item" onclick="fabAction('pedido')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>Pedido rápido</div>
     <div class="fab-item" onclick="fabAction('proveedor')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Nuevo proveedor</div>
+    <div class="fab-item" onclick="fabAction('presupuesto')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Nuevo presupuesto</div>
     <div class="fab-item" onclick="fabAction('excel')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>Importar Excel</div>
     <div class="fab-item" onclick="fabAction('diario')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Nota rápida</div>
     <div class="fab-item" onclick="fabAction('incidencia')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Incidencia</div>
@@ -451,6 +467,8 @@ const daysDiff=d=>{if(!d)return 999;return Math.round((new Date()-new Date(d))/8
 
 // ══════════ STATE ══════════
 let db=null,demoMode=false,aiKey='',offlineQ=[];
+let presupuestos=[],clientes_v=[];
+let chatMemory=JSON.parse(localStorage.getItem('macor_chat_mem')||'[]');
 let proveedores=[],pedidos=[],productos=[],diario=[];
 let CV='dashboard',sortF='nombre',sortD=1,vmG=true,cmpIds=new Set();
 let W=JSON.parse(localStorage.getItem('macor_w')||'null')||{margen:30,entrega:25,fiabilidad:25,calidad:20};
@@ -467,7 +485,7 @@ function saveConfig(){
   initFB(cfg);
 }
 function useDemo(){
-  demoMode=true;proveedores=dProv();pedidos=dPed();productos=dProd();diario=dDiary();
+  demoMode=true;proveedores=dProv();pedidos=dPed();productos=dProd();diario=dDiary();presupuestos=dPres();clientes_v=dClientes();
   launch('demo');
 }
 function initFB(cfg){
@@ -478,6 +496,8 @@ function initFB(cfg){
     db.collection('pedidos').onSnapshot(s=>{pedidos=s.docs.map(d=>({id:d.id,...d.data()}));render();},()=>{});
     db.collection('productos').onSnapshot(s=>{productos=s.docs.map(d=>({id:d.id,...d.data()}));render();},()=>{});
     db.collection('diario').onSnapshot(s=>{diario=s.docs.map(d=>({id:d.id,...d.data()}));render();},()=>{});
+    db.collection('presupuestos').onSnapshot(s=>{presupuestos=s.docs.map(d=>({id:d.id,...d.data()}));render();},()=>{});
+    db.collection('clientes_v').onSnapshot(s=>{clientes_v=s.docs.map(d=>({id:d.id,...d.data()}));render();},()=>{});
     launch('ok');
   }catch(e){toast('Error Firebase: '+e.message,'err');}
 }
@@ -535,6 +555,9 @@ const META={
   ranking:{t:'Ranking',s:'Clasificación inteligente'},
   comparar:{t:'Comparar',s:'Análisis lado a lado'},
   estadisticas:{t:'Estadísticas',s:'Análisis de datos'},
+  presupuestos:{t:'Presupuestos',s:'Ofertas comerciales'},
+  clientes:{t:'Clientes',s:'Gestión de clientes'},
+  rentabilidad:{t:'Rentabilidad',s:'Análisis de margen real'},
   asistente:{t:'Asistente IA',s:'Chat inteligente'},
 };
 function goTo(v){
@@ -546,7 +569,7 @@ function goTo(v){
   if(btn)btn.style.display=['proveedores','ranking','estadisticas','comparar'].includes(v)?'':'none';
 }
 function render(){
-  const fns={dashboard:rDash,alertas:rAlertas,diario:rDiario,proveedores:rProveedores,articulos:rArticulos,productos:rArticulos,calculadora:rCalculadora,objetivos:rObjetivos,buscador:rBuscador,pedidos:rPedidos,ranking:rRanking,comparar:rComparar,estadisticas:rStats,asistente:rAsistente};
+  const fns={dashboard:rDash,alertas:rAlertas,diario:rDiario,proveedores:rProveedores,articulos:rArticulos,productos:rArticulos,calculadora:rCalculadora,objetivos:rObjetivos,buscador:rBuscador,pedidos:rPedidos,presupuestos:rPresupuestos,clientes:rClientes,rentabilidad:rRentabilidad,ranking:rRanking,comparar:rComparar,estadisticas:rStats,asistente:rAsistente};
   (fns[CV]||rProveedores)();updateBadges();
 }
 
@@ -556,6 +579,11 @@ function updateBadges(){
   const urgentes=alerts.filter(a=>a.nivel==='alta').length;
   const total=alerts.length;
   setBdg('d',urgentes);setBdg('a',total);
+  const presPend=presupuestos.filter(p=>p.estado==='enviado'&&daysDiff(p.fecha)<30).length;
+  setBdg('pres',presPend);
+  // Show/hide present btn
+  const btn=ge('btn-present');
+  if(btn)btn.style.display=['proveedores','ranking','estadisticas','comparar','presupuestos'].includes(CV)?'':'none';
 }
 function setBdg(id,n){const el=ge('bdg-'+id);if(!el)return;el.style.display=n?'':'none';el.textContent=n;}
 
@@ -653,6 +681,7 @@ function fabAction(type){
   if(type==='pedido')openPedRapido();
   else if(type==='proveedor'){goTo('proveedores');setTimeout(()=>openProvForm(null),80);}
   else if(type==='excel')openImportExcel();
+  else if(type==='presupuesto'){goTo('presupuestos');setTimeout(()=>openPresupuestoForm(null),80);}
   else if(type==='diario')openDiarioForm(null);
   else if(type==='incidencia')openIncPicker();
 }
@@ -1648,7 +1677,7 @@ function exportarPDF(view){
 // ══════════ DATA LAYER ══════════
 async function saveDoc(col,id,data){
   if(demoMode){
-    const arr=col==='proveedores'?proveedores:col==='pedidos'?pedidos:col==='productos'?productos:diario;
+    const arr=col==='proveedores'?proveedores:col==='pedidos'?pedidos:col==='productos'?productos:col==='presupuestos'?presupuestos:col==='clientes_v'?clientes_v:diario;
     if(id){const i=arr.findIndex(x=>x.id===id);if(i>=0)arr[i]={...arr[i],...data};}
     else arr.push({id:'d_'+Date.now(),...data,createdAt:new Date().toISOString()});
     render();return;
@@ -1669,6 +1698,8 @@ async function delDoc(col,id){
     else if(col==='pedidos')pedidos=pedidos.filter(x=>x.id!==id);
     else if(col==='productos')productos=productos.filter(x=>x.id!==id);
     else if(col==='diario')diario=diario.filter(x=>x.id!==id);
+    else if(col==='presupuestos')presupuestos=presupuestos.filter(x=>x.id!==id);
+    else if(col==='clientes_v')clientes_v=clientes_v.filter(x=>x.id!==id);
     render();return;
   }
   if(!navigator.onLine){offlineQ.push({type:'del',col,id});toast('Eliminación pendiente (sin conexión)');return;}
@@ -1943,8 +1974,14 @@ function processExcel(file){
           return obj;
         });
       } else {
-        // For xlsx we'd need SheetJS - inform user to use CSV
-        ge('import-preview').innerHTML=`<div style="background:var(--am2);border:1px solid rgba(240,160,48,.3);border-radius:var(--r2);padding:.875rem;font-size:.78rem;color:var(--amber);">⚠️ Para archivos Excel (.xlsx), guárdalos primero como CSV desde Excel (Archivo → Guardar como → CSV). Los CSV se importan directamente.</div>`;
+        // Parse xlsx with SheetJS
+        try{
+          const wb=XLSX.read(e.target.result,{type:'array'});
+          const ws=wb.Sheets[wb.SheetNames[0]];
+          const rawRows=XLSX.utils.sheet_to_json(ws,{defval:''});
+          const normalized=rawRows.map(r=>{const o={};Object.keys(r).forEach(k=>{o[k.toLowerCase().trim().replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i').replace(/[óòö]/g,'o').replace(/[úùü]/g,'u').replace(/\s+/g,' ')]=String(r[k]);});return o;});
+          previewImport(normalized);
+        }catch(err){ge('import-preview').innerHTML=`<div style="background:var(--rd2);border-radius:var(--r2);padding:.875rem;font-size:.78rem;color:var(--red);">Error leyendo el Excel. Intenta guardarlo como CSV.</div>`;}
         return;
       }
       previewImport(rows);
@@ -2261,6 +2298,7 @@ function saveObjetivo(idx){
   const obj={nombre:n,tipo:gv('obj-tipo'),target:num('obj-target'),fechaLimite:gv('obj-fecha')};
   if(idx!=null&&idx!=='null')objetivos[parseInt(idx)]=obj;else objetivos.push(obj);
   localStorage.setItem('macor_obj',JSON.stringify(objetivos));
+  if(!demoMode&&db)db.collection('config').doc('objetivos').set({data:JSON.stringify(objetivos)}).catch(()=>{});
   closeModal();toast('Objetivo guardado ✓','ok');rObjetivos();
 }
 
@@ -2449,6 +2487,710 @@ function togglePresentation(){
 // ══════════════════════════════════════════════════════
 // PATCH fichaTab para añadir pestaña Contactos
 // ══════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
+// CLIENTES
+// ══════════════════════════════════════════════════════════════
+function rClientes(){
+  ge('tb-act').innerHTML=`<button class="btn bn-gold btn-sm" onclick="openClienteForm(null)">+ Nuevo cliente</button>`;
+  const list=[...clientes_v].sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  const totalVol=presupuestos.filter(p=>p.estado==='aceptado').reduce((s,p)=>s+(p.total||0),0);
+  ge('content').innerHTML=`
+  <div class="krow">
+    <div class="kpi"><div class="klbl">Clientes</div><div class="kval">${list.length}</div></div>
+    <div class="kpi"><div class="klbl">Volumen facturado</div><div class="kval gld" style="font-size:1.1rem;">${fmtK(totalVol)}</div></div>
+    <div class="kpi"><div class="klbl">Presupuestos activos</div><div class="kval">${presupuestos.filter(p=>p.estado==='enviado').length}</div></div>
+  </div>
+  ${list.length===0?`<div class="empty"><div class="empty-i">👥</div><div class="empty-t">Sin clientes</div><div class="empty-s">Añade clientes para vincularlos a presupuestos y hacer seguimiento.</div></div>`:''}
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Cliente</th><th>Empresa</th><th>Teléfono</th><th>Email</th><th>Presupuestos</th><th>Volumen</th><th></th></tr></thead>
+    <tbody>
+    ${list.map(c=>{
+      const cPres=presupuestos.filter(p=>p.clienteId===c.id);
+      const vol=cPres.filter(p=>p.estado==='aceptado').reduce((s,p)=>s+(p.total||0),0);
+      return`<tr onclick="openClienteDetalle('${c.id}')">
+        <td><div style="font-weight:600;">${esc(c.nombre)}</div></td>
+        <td style="font-size:.78rem;">${esc(c.empresa||'—')}</td>
+        <td style="font-size:.78rem;">${c.telefono?`<a href="tel:${c.telefono}" onclick="event.stopPropagation()" style="color:var(--gold);">${esc(c.telefono)}</a>`:'—'}</td>
+        <td style="font-size:.75rem;">${c.email?`<a href="mailto:${c.email}" onclick="event.stopPropagation()" style="color:var(--gold);font-size:.72rem;">${esc(c.email)}</a>`:'—'}</td>
+        <td>${cPres.length} <span style="color:var(--t3);">(${cPres.filter(p=>p.estado==='aceptado').length} acept.)</span></td>
+        <td style="font-weight:600;font-family:var(--mono);">${vol?fmtK(vol):'—'}</td>
+        <td onclick="event.stopPropagation()"><div style="display:flex;gap:3px;">
+          ${c.telefono?`<a href="tel:${c.telefono}" class="btn bn-teal btn-xs">📞</a>`:''}
+          ${c.telefono?`<a href="https://wa.me/${c.telefono.replace(/\D/g,'')}" target="_blank" class="btn bn-ghost btn-xs">💬</a>`:''}
+          <button class="btn bn-ghost btn-xs" onclick="openClienteForm('${c.id}')">Editar</button>
+          <button class="btn bn-red btn-xs" onclick="delCliente('${c.id}')">✕</button>
+        </div></td>
+      </tr>`;
+    }).join('')}
+    </tbody></table></div></div>`;
+}
+
+function openClienteForm(id){
+  const c=id?clientes_v.find(x=>x.id===id):{};
+  showModal(`
+  <div class="mh"><h2>${id?'Editar cliente':'Nuevo cliente'}</h2><button class="xb" onclick="closeModal()">✕</button></div>
+  <div class="mb"><div class="fg">
+    <div class="full"><label class="fl">Nombre de contacto *</label><input id="cl-n" value="${esc(c.nombre||'')}"/></div>
+    <div><label class="fl">Empresa</label><input id="cl-emp" value="${esc(c.empresa||'')}"/></div>
+    <div><label class="fl">CIF / NIF</label><input id="cl-cif" value="${esc(c.cif||'')}"/></div>
+    <div><label class="fl">Teléfono</label><input id="cl-tel" value="${esc(c.telefono||'')}"/></div>
+    <div><label class="fl">Email</label><input id="cl-em" type="email" value="${esc(c.email||'')}"/></div>
+    <div><label class="fl">Dirección</label><input id="cl-dir" value="${esc(c.direccion||'')}"/></div>
+    <div><label class="fl">Población</label><input id="cl-pob" value="${esc(c.poblacion||'')}"/></div>
+    <div><label class="fl">Forma de pago habitual</label>
+      <select class="fsel" id="cl-pago">
+        ${['','Contado','30 días','60 días','90 días','Transferencia','Confirming'].map(x=>`<option ${c.pago===x?'selected':''}>${x}</option>`).join('')}
+      </select>
+    </div>
+    <div class="full"><label class="fl">Notas</label><textarea id="cl-no" style="height:70px;">${esc(c.notas||'')}</textarea></div>
+  </div></div>
+  <div class="mf"><button class="btn bn-ghost" onclick="closeModal()">Cancelar</button><button class="btn bn-gold" onclick="saveCliente('${id||''}')">Guardar cliente</button></div>`,'sm');
+}
+async function saveCliente(id){
+  const n=ge('cl-n').value.trim();if(!n){toast('Nombre obligatorio','err');return;}
+  const data={nombre:n,empresa:gv('cl-emp'),cif:gv('cl-cif'),telefono:gv('cl-tel'),email:gv('cl-em'),direccion:gv('cl-dir'),poblacion:gv('cl-pob'),pago:gv('cl-pago'),notas:gv('cl-no'),updatedAt:new Date().toISOString()};
+  await saveDoc('clientes_v',id,data);closeModal();toast('Cliente guardado ✓','ok');
+}
+async function delCliente(id){if(!confirm('¿Eliminar cliente?'))return;await delDoc('clientes_v',id);toast('Eliminado');}
+
+function openClienteDetalle(id){
+  const c=clientes_v.find(x=>x.id===id);if(!c)return;
+  const cPres=[...presupuestos].filter(p=>p.clienteId===id).sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0));
+  const vol=cPres.filter(p=>p.estado==='aceptado').reduce((s,p)=>s+(p.total||0),0);
+  showModal(`
+  <div class="mh">
+    <div><h2>${esc(c.nombre)}</h2>${c.empresa?`<div style="font-size:.72rem;color:var(--t3);">${esc(c.empresa)}</div>`:''}</div>
+    <div style="display:flex;gap:5px;">
+      ${c.telefono?`<a href="tel:${c.telefono}" class="btn bn-teal btn-sm">📞 Llamar</a>`:''}
+      ${c.telefono?`<a href="https://wa.me/${c.telefono.replace(/\D/g,'')}" target="_blank" class="btn bn-ghost btn-sm">💬 WhatsApp</a>`:''}
+      <button class="xb" onclick="closeModal()">✕</button>
+    </div>
+  </div>
+  <div class="mb">
+    <div class="krow" style="grid-template-columns:repeat(3,1fr);margin-bottom:1rem;">
+      <div class="kpi"><div class="klbl">Presupuestos</div><div class="kval">${cPres.length}</div></div>
+      <div class="kpi"><div class="klbl">Aceptados</div><div class="kval grn">${cPres.filter(p=>p.estado==='aceptado').length}</div></div>
+      <div class="kpi"><div class="klbl">Volumen</div><div class="kval gld" style="font-size:1rem;">${fmtK(vol)}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem;">
+      ${c.telefono?`<div class="mtile"><div class="mtile-l">Teléfono</div><div class="mtile-v"><a href="tel:${c.telefono}" style="color:var(--gold);">${esc(c.telefono)}</a></div></div>`:''}
+      ${c.email?`<div class="mtile"><div class="mtile-l">Email</div><div class="mtile-v" style="font-size:.75rem;"><a href="mailto:${c.email}" style="color:var(--gold);">${esc(c.email)}</a></div></div>`:''}
+      ${c.pago?`<div class="mtile"><div class="mtile-l">Pago habitual</div><div class="mtile-v">${esc(c.pago)}</div></div>`:''}
+      ${c.poblacion?`<div class="mtile"><div class="mtile-l">Población</div><div class="mtile-v">${esc(c.poblacion)}</div></div>`:''}
+    </div>
+    <div style="font-size:.72rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.625rem;">Presupuestos</div>
+    ${cPres.length===0?`<div class="empty" style="padding:1.5rem;"><div class="empty-i">📄</div><div class="empty-t">Sin presupuestos</div></div>`:''}
+    ${cPres.map(p=>`<div class="ali" onclick="closeModal();setTimeout(()=>openPresupuestoDetalle('${p.id}'),100)">
+      <div style="flex:1;"><div style="font-weight:600;font-size:.8rem;">${esc(p.titulo||'Sin título')}</div>
+      <div style="font-size:.7rem;color:var(--t3);">${fmtDate(p.fecha)} · ${fmtK(p.total||0)}</div></div>
+      ${presEstBadge(p.estado)}
+    </div>`).join('')}
+  </div>
+  <div class="mf">
+    <button class="btn bn-ghost btn-sm" onclick="closeModal()">Cerrar</button>
+    <button class="btn bn-surf btn-sm" onclick="openClienteForm('${id}')">Editar</button>
+    <button class="btn bn-gold btn-sm" onclick="closeModal();setTimeout(()=>openPresupuestoForm(null,'${id}'),100)">+ Presupuesto</button>
+  </div>`,true);
+}
+
+// ══════════════════════════════════════════════════════════════
+// PRESUPUESTOS
+// ══════════════════════════════════════════════════════════════
+function presEstBadge(s){
+  const map={borrador:'bsrf',enviado:'bblu',aceptado:'bgrn',rechazado:'bred',caducado:'bamb'};
+  return`<span class="bdg ${map[s]||'bsrf'}">${s||'borrador'}</span>`;
+}
+
+function rPresupuestos(){
+  ge('tb-act').innerHTML=`
+    <button class="btn bn-surf btn-sm exp-btn" onclick="exportarPDF('presupuestos')">⬇ PDF</button>
+    <button class="btn bn-gold btn-sm" onclick="openPresupuestoForm(null)">+ Nuevo presupuesto</button>`;
+  const filtro=(ge('f-pres')||{value:''}).value;
+  let list=[...presupuestos].sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0));
+  if(filtro)list=list.filter(p=>p.estado===filtro);
+
+  const totalAcept=presupuestos.filter(p=>p.estado==='aceptado').reduce((s,p)=>s+(p.total||0),0);
+  const totalPend=presupuestos.filter(p=>p.estado==='enviado').reduce((s,p)=>s+(p.total||0),0);
+  const tasa=presupuestos.filter(p=>p.estado==='aceptado'||p.estado==='rechazado').length?
+    Math.round(presupuestos.filter(p=>p.estado==='aceptado').length/presupuestos.filter(p=>p.estado==='aceptado'||p.estado==='rechazado').length*100):0;
+
+  ge('content').innerHTML=`
+  <div class="krow">
+    <div class="kpi"><div class="klbl">Total presupuestos</div><div class="kval">${presupuestos.length}</div></div>
+    <div class="kpi"><div class="klbl">Volumen aceptado</div><div class="kval gld" style="font-size:1.1rem;">${fmtK(totalAcept)}</div></div>
+    <div class="kpi"><div class="klbl">Pendientes de respuesta</div><div class="kval amb">${fmtK(totalPend)}</div></div>
+    <div class="kpi"><div class="klbl">Tasa de éxito</div><div class="kval ${tasa>=50?'grn':'red'}">${tasa}%</div></div>
+  </div>
+  <div class="tabs" style="margin-bottom:1rem;">
+    <div class="tab ${!filtro?'on':''}" onclick="setFiltroPres('')">Todos (${presupuestos.length})</div>
+    <div class="tab ${filtro==='borrador'?'on':''}" onclick="setFiltroPres('borrador')">Borrador (${presupuestos.filter(p=>p.estado==='borrador').length})</div>
+    <div class="tab ${filtro==='enviado'?'on':''}" onclick="setFiltroPres('enviado')">Enviado (${presupuestos.filter(p=>p.estado==='enviado').length})</div>
+    <div class="tab ${filtro==='aceptado'?'on':''}" onclick="setFiltroPres('aceptado')">Aceptado (${presupuestos.filter(p=>p.estado==='aceptado').length})</div>
+    <div class="tab ${filtro==='rechazado'?'on':''}" onclick="setFiltroPres('rechazado')">Rechazado (${presupuestos.filter(p=>p.estado==='rechazado').length})</div>
+  </div>
+  ${list.length===0?`<div class="empty"><div class="empty-i">📄</div><div class="empty-t">Sin presupuestos${filtro?' en este estado':''}</div></div>`:''}
+  <div style="display:flex;flex-direction:column;gap:.5rem;">
+  ${list.map(p=>{
+    const cl=clientes_v.find(x=>x.id===p.clienteId);
+    const dias=p.fecha?daysDiff(p.fecha):0;
+    const urgente=p.estado==='enviado'&&dias>14;
+    return`<div class="card" style="padding:1rem;cursor:pointer;${urgente?'border-color:rgba(240,72,72,.35);':''}" onclick="openPresupuestoDetalle('${p.id}')"
+      onmouseenter="this.style.background='var(--s2)'" onmouseleave="this.style.background=''">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+            <span style="font-weight:700;font-size:.88rem;">${esc(p.titulo||'Sin título')}</span>
+            ${urgente?`<span class="bdg bred" style="font-size:.6rem;">⚠️ ${dias}d sin respuesta</span>`:''}
+          </div>
+          <div style="font-size:.7rem;color:var(--t3);">
+            ${cl?esc(cl.nombre||cl.empresa||''):'Sin cliente'} · ${fmtDate(p.fecha)}
+            ${p.validezDias?` · Válido ${p.validezDias}d`:''}
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:1.1rem;font-weight:800;font-family:var(--mono);color:var(--gold);">${fmtK(p.total||0)}</div>
+          <div style="margin-top:3px;">${presEstBadge(p.estado)}</div>
+        </div>
+      </div>
+      ${p.lineas?.length?`<div style="font-size:.68rem;color:var(--t3);margin-top:.5rem;">${p.lineas.length} línea${p.lineas.length!==1?'s':''} · Margen medio: ${calcMargenPres(p)}%</div>`:''}
+    </div>`;
+  }).join('')}
+  </div>`;
+}
+function setFiltroPres(v){const el=ge('f-pres')||document.createElement('input');el.id='f-pres';el.value=v;rPresupuestos();}
+function calcMargenPres(p){
+  if(!p.lineas?.length)return 0;
+  const lineas=p.lineas.filter(l=>l.pvp&&l.coste);
+  if(!lineas.length)return 0;
+  const totalPvp=lineas.reduce((s,l)=>s+(l.pvp*l.cantidad),0);
+  const totalCoste=lineas.reduce((s,l)=>s+(l.coste*l.cantidad),0);
+  return totalPvp?Math.round((totalPvp-totalCoste)/totalPvp*100):0;
+}
+
+function openPresupuestoDetalle(id){
+  const p=presupuestos.find(x=>x.id===id);if(!p)return;
+  const cl=clientes_v.find(x=>x.id===p.clienteId);
+  const lineas=p.lineas||[];
+  const subtotal=lineas.reduce((s,l)=>s+(l.pvp||0)*(l.cantidad||1),0);
+  const descTotal=subtotal*(p.descuento||0)/100;
+  const base=subtotal-descTotal;
+  const ivaAmt=base*(p.iva||21)/100;
+  const total=base+ivaAmt;
+  showModal(`
+  <div class="mh">
+    <div>
+      <h2>${esc(p.titulo||'Presupuesto')}</h2>
+      <div style="font-size:.7rem;color:var(--t3);">Nº ${p.numero||'—'} · ${fmtDate(p.fecha)} · ${cl?esc(cl.nombre||cl.empresa||''):'Sin cliente'}</div>
+    </div>
+    <div style="display:flex;gap:5px;">
+      <button class="btn bn-surf btn-sm" onclick="exportPresupuesto('${p.id}')">⬇ PDF</button>
+      ${p.estado==='enviado'?`<button class="btn bn-gold btn-sm" onclick="cambiarEstadoPres('${p.id}','aceptado')">✓ Aceptado</button>`:''}
+      ${p.estado==='enviado'?`<button class="btn bn-red btn-sm" onclick="cambiarEstadoPres('${p.id}','rechazado')">✕ Rechazado</button>`:''}
+      <button class="xb" onclick="closeModal()">✕</button>
+    </div>
+  </div>
+  <div class="mb">
+    <div class="krow" style="grid-template-columns:repeat(4,1fr);margin-bottom:1rem;">
+      <div class="kpi"><div class="klbl">Subtotal</div><div class="kval" style="font-size:1rem;">${fmtK(subtotal)}</div></div>
+      <div class="kpi"><div class="klbl">Descuento</div><div class="kval" style="font-size:1rem;">${p.descuento||0}%</div></div>
+      <div class="kpi"><div class="klbl">IVA (${p.iva||21}%)</div><div class="kval" style="font-size:1rem;">${fmtK(ivaAmt)}</div></div>
+      <div class="kpi"><div class="klbl">Total</div><div class="kval gld" style="font-size:1.2rem;">${fmtK(total)}</div></div>
+    </div>
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>Artículo</th><th>Proveedor</th><th>Coste</th><th>PVP</th><th>Cant.</th><th>Total</th><th>Margen</th></tr></thead>
+      <tbody>
+      ${lineas.map(l=>{
+        const prov=proveedores.find(x=>x.id===l.proveedorId);
+        const lineTotal=(l.pvp||0)*(l.cantidad||1);
+        const margenLinea=l.pvp&&l.coste?Math.round((l.pvp-l.coste)/l.pvp*100):null;
+        return`<tr>
+          <td><div style="font-weight:500;">${esc(l.nombre)}</div>${l.referencia?`<div style="font-size:.65rem;color:var(--t3);">${esc(l.referencia)}</div>`:''}</td>
+          <td style="font-size:.72rem;">${prov?esc(prov.nombre):'—'}</td>
+          <td style="font-family:var(--mono);font-size:.78rem;">${l.coste?fmt(l.coste):'—'}</td>
+          <td style="font-weight:600;font-family:var(--mono);">${fmt(l.pvp||0)}</td>
+          <td style="font-family:var(--mono);">${l.cantidad||1} ${esc(l.unidad||'ud')}</td>
+          <td style="font-weight:700;font-family:var(--mono);">${fmtK(lineTotal)}</td>
+          <td><span style="color:${margenLinea>=30?'var(--green)':margenLinea>=15?'var(--amber)':'var(--red)'};">${margenLinea!=null?margenLinea+'%':'—'}</span></td>
+        </tr>`;
+      }).join('')}
+      </tbody></table></div></div>
+    ${p.notas?`<div style="background:var(--bg3);border-radius:var(--r2);padding:.75rem;font-size:.78rem;color:var(--t2);margin-top:.75rem;">${esc(p.notas)}</div>`:''}
+  </div>
+  <div class="mf">
+    <button class="btn bn-red btn-sm" onclick="delPres('${p.id}');closeModal()">Eliminar</button>
+    <button class="btn bn-ghost btn-sm" onclick="closeModal()">Cerrar</button>
+    <button class="btn bn-gold btn-sm" onclick="openPresupuestoForm('${p.id}')">Editar</button>
+  </div>`,true);
+}
+
+async function cambiarEstadoPres(id,estado){
+  await saveDoc('presupuestos',id,{estado,updatedAt:new Date().toISOString()});
+  closeModal();toast(`Presupuesto marcado como ${estado}`,'ok');
+}
+async function delPres(id){if(!confirm('¿Eliminar presupuesto?'))return;await delDoc('presupuestos',id);toast('Eliminado');}
+
+function openPresupuestoForm(id,preClienteId){
+  const p=id?presupuestos.find(x=>x.id===id):{};
+  const cid=preClienteId||p.clienteId||'';
+  const lineas=p.lineas||[{nombre:'',referencia:'',proveedorId:'',coste:'',pvp:'',cantidad:1,unidad:'ud'}];
+  const numPres='PRE-'+(new Date().getFullYear())+'-'+(String(presupuestos.length+1).padStart(3,'0'));
+
+  showModal(`
+  <div class="mh"><h2>${id?'Editar presupuesto':'Nuevo presupuesto'}</h2><button class="xb" onclick="closeModal()">✕</button></div>
+  <div class="mb">
+    <div class="fg" style="margin-bottom:1rem;">
+      <div class="full"><label class="fl">Título del presupuesto *</label><input id="pr-tit" value="${esc(p.titulo||'')}" placeholder="Ej: Suministro tornillería nave 2"/></div>
+      <div><label class="fl">Cliente</label>
+        <select class="fsel" id="pr-cli"><option value="">— Sin cliente —</option>
+          ${clientes_v.map(c=>`<option value="${c.id}" ${c.id===cid?'selected':''}>${esc(c.nombre||c.empresa||'')}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="fl">Número</label><input id="pr-num" value="${esc(p.numero||numPres)}"/></div>
+      <div><label class="fl">Fecha</label><input id="pr-fecha" type="date" value="${p.fecha||today()}"/></div>
+      <div><label class="fl">Validez (días)</label><input id="pr-val" type="number" min="1" value="${p.validezDias||30}"/></div>
+      <div><label class="fl">Estado</label>
+        <select class="fsel" id="pr-est">
+          ${['borrador','enviado','aceptado','rechazado','caducado'].map(s=>`<option ${(p.estado||'borrador')===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="fl">Descuento global (%)</label><input id="pr-desc" type="number" min="0" max="100" step=".1" value="${p.descuento||0}" oninput="calcTotalPres()"/></div>
+      <div><label class="fl">IVA (%)</label><input id="pr-iva" type="number" min="0" step="1" value="${p.iva!=null?p.iva:21}" oninput="calcTotalPres()"/></div>
+    </div>
+
+    <!-- LÍNEAS -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+      <div style="font-size:.7rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;">Líneas del presupuesto</div>
+      <button class="btn bn-surf btn-xs" onclick="addLineaPres()">+ Línea</button>
+    </div>
+    <div id="lineas-wrap" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.875rem;"></div>
+    <div id="pres-total-box" style="background:var(--bg3);border-radius:var(--r2);padding:.875rem;text-align:right;"></div>
+    <div class="full" style="margin-top:.75rem;"><label class="fl">Notas / Condiciones</label><textarea id="pr-no" style="height:70px;">${esc(p.notas||'')}</textarea></div>
+  </div>
+  <div class="mf"><button class="btn bn-ghost" onclick="closeModal()">Cancelar</button><button class="btn bn-gold" onclick="savePresupuesto('${id||''}')">Guardar presupuesto</button></div>`,true);
+
+  // Render lines
+  window._presLineas=JSON.parse(JSON.stringify(lineas));
+  renderLineasPres();
+}
+
+function renderLineasPres(){
+  const wrap=ge('lineas-wrap');if(!wrap)return;
+  wrap.innerHTML=window._presLineas.map((l,i)=>`
+  <div style="background:var(--bg3);border-radius:var(--r2);padding:.75rem;border:1px solid var(--b);">
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:.5rem;margin-bottom:.5rem;">
+      <div><label class="fl">Artículo</label>
+        <input id="pl-n-${i}" value="${esc(l.nombre||'')}" list="art-names" placeholder="Buscar artículo…" oninput="onLineaArtChange(${i})"/>
+        <datalist id="art-names">${productos.map(p=>`<option value="${esc(p.nombre)}">`).join('')}</datalist>
+      </div>
+      <div><label class="fl">Referencia</label><input id="pl-ref-${i}" value="${esc(l.referencia||'')}"/></div>
+      <div><label class="fl">Proveedor</label>
+        <select class="fsel" id="pl-prov-${i}" onchange="onLineaProvChange(${i})">
+          <option value="">— Proveedor —</option>
+          ${proveedores.filter(p=>(p.estado||'activo')==='activo').map(p=>`<option value="${p.id}" ${p.id===l.proveedorId?'selected':''}>${esc(p.nombre)}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:.5rem;align-items:flex-end;">
+      <div><label class="fl">Coste (€)</label><input id="pl-cos-${i}" type="number" min="0" step=".01" value="${l.coste||''}" oninput="calcLineaPres(${i})"/></div>
+      <div><label class="fl">PVP (€)</label><input id="pl-pvp-${i}" type="number" min="0" step=".01" value="${l.pvp||''}" style="color:var(--gold);font-weight:600;" oninput="calcLineaPres(${i})"/></div>
+      <div><label class="fl">Cantidad</label><input id="pl-qty-${i}" type="number" min="1" step="1" value="${l.cantidad||1}" oninput="calcTotalPres()"/></div>
+      <div><label class="fl">Unidad</label><input id="pl-uni-${i}" value="${esc(l.unidad||'ud')}"/></div>
+      <div><button class="btn bn-red btn-xs" onclick="removeLinea(${i})" style="margin-top:16px;">✕</button></div>
+    </div>
+    <div id="pl-mg-${i}" style="font-size:.68rem;margin-top:.375rem;color:var(--t3);"></div>
+  </div>`).join('');
+  window._presLineas.forEach((_,i)=>calcLineaPres(i));
+  calcTotalPres();
+}
+
+function onLineaArtChange(i){
+  const nombre=ge(`pl-n-${i}`)?.value;
+  if(!nombre)return;
+  const art=productos.find(p=>p.nombre.toLowerCase()===nombre.toLowerCase());
+  if(art){
+    const refEl=ge(`pl-ref-${i}`);if(refEl&&art.referencia)refEl.value=art.referencia;
+    const provEl=ge(`pl-prov-${i}`);if(provEl&&art.proveedorId)provEl.value=art.proveedorId;
+    const cosEl=ge(`pl-cos-${i}`);if(cosEl&&art.precio!=null)cosEl.value=art.precio;
+    const uniEl=ge(`pl-uni-${i}`);if(uniEl&&art.unidad)uniEl.value=art.unidad;
+    onLineaProvChange(i);
+  }
+}
+
+function onLineaProvChange(i){
+  const provId=ge(`pl-prov-${i}`)?.value;
+  const prov=proveedores.find(x=>x.id===provId);
+  if(!prov?.margen)return;
+  const coste=parseFloat(ge(`pl-cos-${i}`)?.value)||0;
+  if(coste){const pvp=coste/(1-prov.margen/100);const pvpEl=ge(`pl-pvp-${i}`);if(pvpEl)pvpEl.value=pvp.toFixed(2);}
+  calcLineaPres(i);calcTotalPres();
+}
+
+function calcLineaPres(i){
+  const coste=parseFloat(ge(`pl-cos-${i}`)?.value)||0;
+  const pvp=parseFloat(ge(`pl-pvp-${i}`)?.value)||0;
+  const el=ge(`pl-mg-${i}`);if(!el)return;
+  if(!pvp){el.textContent='';return;}
+  const margen=pvp?Math.round((pvp-coste)/pvp*100):0;
+  const col=margen>=30?'var(--green)':margen>=15?'var(--amber)':'var(--red)';
+  el.innerHTML=`Margen: <strong style="color:${col};">${margen}%</strong>${coste?` · Beneficio: ${fmt(pvp-coste)}`:''}`;
+  calcTotalPres();
+}
+
+function calcTotalPres(){
+  let sub=0;
+  window._presLineas.forEach((_,i)=>{
+    const pvp=parseFloat(ge(`pl-pvp-${i}`)?.value)||0;
+    const qty=parseFloat(ge(`pl-qty-${i}`)?.value)||1;
+    sub+=pvp*qty;
+  });
+  const desc=parseFloat(ge('pr-desc')?.value)||0;
+  const iva=parseFloat(ge('pr-iva')?.value)||21;
+  const base=sub*(1-desc/100);
+  const ivaAmt=base*iva/100;
+  const total=base+ivaAmt;
+  const el=ge('pres-total-box');if(!el)return;
+  el.innerHTML=`
+    <div style="display:flex;justify-content:flex-end;gap:1.5rem;flex-wrap:wrap;">
+      <div style="font-size:.8rem;"><span style="color:var(--t3);">Subtotal: </span><strong>${fmtK(sub)}</strong></div>
+      ${desc?`<div style="font-size:.8rem;"><span style="color:var(--t3);">Dto ${desc}%: </span><strong style="color:var(--red);">-${fmtK(sub*desc/100)}</strong></div>`:''}
+      <div style="font-size:.8rem;"><span style="color:var(--t3);">IVA ${iva}%: </span><strong>${fmtK(ivaAmt)}</strong></div>
+      <div style="font-size:1.1rem;"><span style="color:var(--t3);">Total: </span><strong style="color:var(--gold);">${fmtK(total)}</strong></div>
+    </div>`;
+}
+
+function addLineaPres(){
+  window._presLineas.push({nombre:'',referencia:'',proveedorId:'',coste:'',pvp:'',cantidad:1,unidad:'ud'});
+  renderLineasPres();
+}
+function removeLinea(i){
+  window._presLineas.splice(i,1);renderLineasPres();
+}
+
+async function savePresupuesto(id){
+  const titulo=ge('pr-tit')?.value.trim();if(!titulo){toast('Título obligatorio','err');return;}
+  const lineas=window._presLineas.map((_,i)=>({
+    nombre:ge(`pl-n-${i}`)?.value.trim()||'',
+    referencia:ge(`pl-ref-${i}`)?.value.trim()||'',
+    proveedorId:ge(`pl-prov-${i}`)?.value||'',
+    coste:parseFloat(ge(`pl-cos-${i}`)?.value)||0,
+    pvp:parseFloat(ge(`pl-pvp-${i}`)?.value)||0,
+    cantidad:parseFloat(ge(`pl-qty-${i}`)?.value)||1,
+    unidad:ge(`pl-uni-${i}`)?.value.trim()||'ud',
+  })).filter(l=>l.nombre);
+  const desc=parseFloat(ge('pr-desc')?.value)||0;
+  const iva=parseFloat(ge('pr-iva')?.value)||21;
+  const sub=lineas.reduce((s,l)=>s+(l.pvp||0)*(l.cantidad||1),0);
+  const total=sub*(1-desc/100)*(1+iva/100);
+  const data={titulo,clienteId:gv('pr-cli'),numero:gv('pr-num'),fecha:gv('pr-fecha'),validezDias:parseInt(ge('pr-val')?.value)||30,estado:gv('pr-est')||'borrador',descuento:desc,iva,lineas,total,notas:gv('pr-no'),updatedAt:new Date().toISOString()};
+  await saveDoc('presupuestos',id,data);closeModal();toast('Presupuesto guardado ✓','ok');
+}
+
+function exportPresupuesto(id){
+  const p=presupuestos.find(x=>x.id===id);if(!p)return;
+  const cl=clientes_v.find(x=>x.id===p.clienteId);
+  const lineas=p.lineas||[];
+  const sub=lineas.reduce((s,l)=>s+(l.pvp||0)*(l.cantidad||1),0);
+  const base=sub*(1-(p.descuento||0)/100);
+  const ivaAmt=base*((p.iva||21)/100);
+  const total=base+ivaAmt;
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Presupuesto ${p.numero||''}</title>
+  <style>
+    body{font-family:Arial,sans-serif;font-size:12px;color:#1a2744;padding:2cm;max-width:800px;margin:0 auto;}
+    .header{display:flex;justify-content:space-between;margin-bottom:2cm;border-bottom:3px solid #e8a020;padding-bottom:20px;}
+    .logo{font-size:28px;font-weight:900;color:#1a2744;}
+    .logo span{color:#e8a020;}
+    .pres-num{font-size:18px;font-weight:700;color:#1a2744;}
+    .cliente-box{background:#f5f5f5;padding:15px;border-radius:6px;margin-bottom:1cm;}
+    table{width:100%;border-collapse:collapse;margin:1cm 0;}
+    th{background:#1a2744;color:#fff;padding:8px 10px;text-align:left;font-size:11px;}
+    td{padding:7px 10px;border-bottom:1px solid #ddd;}
+    tr:nth-child(even){background:#f9f9f9;}
+    .totals{text-align:right;margin-top:0.5cm;}
+    .totals div{margin-bottom:5px;}
+    .total-final{font-size:16px;font-weight:700;color:#e8a020;border-top:2px solid #e8a020;padding-top:8px;margin-top:8px;}
+    .footer{margin-top:2cm;font-size:10px;color:#888;border-top:1px solid #ddd;padding-top:10px;}
+    @media print{body{padding:1cm;}}
+  </style></head><body>
+  <div class="header">
+    <div><div class="logo">Macor <span>Suministros</span></div></div>
+    <div style="text-align:right;">
+      <div class="pres-num">${p.numero||'PRESUPUESTO'}</div>
+      <div style="font-size:11px;color:#666;">Fecha: ${fmtDate(p.fecha)}</div>
+      <div style="font-size:11px;color:#666;">Válido: ${p.validezDias||30} días</div>
+    </div>
+  </div>
+  ${cl?`<div class="cliente-box">
+    <div style="font-weight:700;margin-bottom:5px;">${esc(cl.nombre||'')} ${cl.empresa?'· '+esc(cl.empresa):''}</div>
+    ${cl.cif?`<div>CIF: ${esc(cl.cif)}</div>`:''}
+    ${cl.direccion?`<div>${esc(cl.direccion)}${cl.poblacion?' · '+esc(cl.poblacion):''}</div>`:''}
+    ${cl.email?`<div>${esc(cl.email)}</div>`:''}
+  </div>`:''}
+  <table>
+    <thead><tr><th>Artículo</th><th>Ref.</th><th>Cant.</th><th>Precio unit.</th><th>Total</th></tr></thead>
+    <tbody>
+    ${lineas.map(l=>`<tr>
+      <td><strong>${esc(l.nombre)}</strong></td>
+      <td style="font-size:10px;color:#666;">${esc(l.referencia||'')}</td>
+      <td>${l.cantidad||1} ${esc(l.unidad||'ud')}</td>
+      <td style="text-align:right;">${fmt(l.pvp||0)}</td>
+      <td style="text-align:right;font-weight:600;">${fmtK((l.pvp||0)*(l.cantidad||1))}</td>
+    </tr>`).join('')}
+    </tbody>
+  </table>
+  <div class="totals">
+    <div>Subtotal: <strong>${fmtK(sub)}</strong></div>
+    ${p.descuento?`<div>Descuento (${p.descuento}%): <strong style="color:#c03030;">-${fmtK(sub*p.descuento/100)}</strong></div>`:''}
+    <div>IVA (${p.iva||21}%): <strong>${fmtK(ivaAmt)}</strong></div>
+    <div class="total-final">TOTAL: ${fmtK(total)}</div>
+  </div>
+  ${p.notas?`<div style="margin-top:1cm;padding:15px;background:#fffdf0;border-left:3px solid #e8a020;font-size:11px;">${esc(p.notas)}</div>`:''}
+  <div class="footer">Presupuesto generado con Macor Suite Comercial · Válido por ${p.validezDias||30} días desde la fecha de emisión</div>
+  </body></html>`);
+  win.document.close();setTimeout(()=>win.print(),500);
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENTABILIDAD
+// ══════════════════════════════════════════════════════════════
+function rRentabilidad(){
+  ge('tb-act').innerHTML='';
+  const activos=proveedores.filter(p=>(p.estado||'activo')==='activo');
+  const rentProv=activos.map(p=>{
+    const peds=pedidos.filter(x=>x.proveedorId===p.id);
+    const compras=peds.reduce((s,x)=>s+(x.importe||0),0);
+    const presLineas=presupuestos.flatMap(pr=>pr.lineas||[]).filter(l=>l.proveedorId===p.id);
+    const ventasEst=presLineas.filter(l=>presupuestos.find(pr=>pr.id&&pr.lineas?.includes(l))?.estado==='aceptado').reduce((s,l)=>s+(l.pvp||0)*(l.cantidad||1),0);
+    const costeEst=presLineas.filter(l=>presupuestos.find(pr=>pr.id&&pr.lineas?.includes(l))?.estado==='aceptado').reduce((s,l)=>s+(l.coste||0)*(l.cantidad||1),0);
+    const margenReal=ventasEst&&costeEst?Math.round((ventasEst-costeEst)/ventasEst*100):null;
+    const sc_=sc(p);
+    return{...p,compras,ventasEst,costeEst,margenReal,sc_,pedidos_:peds.length};
+  }).sort((a,b)=>b.compras-a.compras);
+
+  const totalCompras=rentProv.reduce((s,p)=>s+p.compras,0);
+  const totalVentas=presupuestos.filter(p=>p.estado==='aceptado').reduce((s,p)=>s+(p.total||0),0);
+  const margenGlobal=totalVentas&&totalCompras?Math.round((totalVentas-totalCompras)/totalVentas*100):0;
+
+  ge('content').innerHTML=`
+  <div class="krow">
+    <div class="kpi"><div class="klbl">Total compras</div><div class="kval" style="font-size:1rem;">${fmtK(totalCompras)}</div></div>
+    <div class="kpi"><div class="klbl">Ventas aceptadas</div><div class="kval gld" style="font-size:1rem;">${fmtK(totalVentas)}</div></div>
+    <div class="kpi"><div class="klbl">Margen global estimado</div><div class="kval ${margenGlobal>=25?'grn':margenGlobal>=15?'amb':'red'}">${margenGlobal}%</div></div>
+    <div class="kpi"><div class="klbl">Presupuestos aceptados</div><div class="kval">${presupuestos.filter(p=>p.estado==='aceptado').length}</div></div>
+  </div>
+  <div class="card" style="margin-bottom:1rem;"><div class="tw"><table>
+    <thead><tr><th>Proveedor</th><th>Categoría</th><th>Compras</th><th>% del total</th><th>Pedidos</th><th>Margen teórico</th><th>Score</th></tr></thead>
+    <tbody>
+    ${rentProv.map(p=>{
+      const pct=totalCompras?Math.round(p.compras/totalCompras*100):0;
+      return`<tr onclick="openFicha('${p.id}')">
+        <td><div style="font-weight:600;">${esc(p.nombre)}</div></td>
+        <td>${p.categoria?`<span class="bdg bblu">${esc(p.categoria)}</span>`:'-'}</td>
+        <td style="font-weight:600;font-family:var(--mono);">${fmtK(p.compras)}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:60px;height:5px;background:var(--bg3);border-radius:2px;overflow:hidden;"><div style="height:100%;background:${pct>40?'var(--red)':pct>20?'var(--amber)':'var(--blue)'};width:${pct}%;"></div></div>
+            <span style="font-size:.72rem;font-family:var(--mono);">${pct}%</span>
+          </div>
+        </td>
+        <td style="font-family:var(--mono);">${p.pedidos_}</td>
+        <td><span style="font-weight:600;color:${(p.margen||0)>=30?'var(--green)':(p.margen||0)>=15?'var(--amber)':'var(--red)'};">${p.margen!=null?p.margen+'%':'—'}</span></td>
+        <td><span style="font-weight:700;font-family:var(--mono);color:${scC(p.sc_)};">${p.sc_}</span></td>
+      </tr>`;
+    }).join('')}
+    </tbody></table></div></div>
+  ${presupuestos.filter(p=>p.estado==='aceptado').length>0?`
+  <div class="card cp">
+    <div class="stitle">📊 Rentabilidad por presupuesto aceptado</div>
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>Presupuesto</th><th>Cliente</th><th>Importe</th><th>Margen</th></tr></thead>
+      <tbody>
+      ${presupuestos.filter(p=>p.estado==='aceptado').sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0)).map(p=>{
+        const cl=clientes_v.find(x=>x.id===p.clienteId);
+        const m=calcMargenPres(p);
+        return`<tr onclick="openPresupuestoDetalle('${p.id}')">
+          <td style="font-weight:500;">${esc(p.titulo||'—')}</td>
+          <td style="font-size:.75rem;">${cl?esc(cl.nombre||cl.empresa||''):'—'}</td>
+          <td style="font-weight:600;font-family:var(--mono);">${fmtK(p.total||0)}</td>
+          <td><span style="color:${m>=30?'var(--green)':m>=15?'var(--amber)':'var(--red)'};">${m}%</span></td>
+        </tr>`;
+      }).join('')}
+      </tbody></table></div></div>
+  </div>`:''}`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// INFORME SEMANAL IA
+// ══════════════════════════════════════════════════════════════
+async function generarInformeSemanal(){
+  if(!aiKey){toast('Configura la clave API de Anthropic primero','err');return;}
+  showModal(`
+  <div class="mh"><h2>🤖 Generando informe semanal…</h2><button class="xb" onclick="closeModal()">✕</button></div>
+  <div class="mb" style="text-align:center;padding:2rem;">
+    <div style="font-size:2rem;margin-bottom:1rem;">⏳</div>
+    <div style="color:var(--t2);">La IA está analizando todos tus datos…</div>
+  </div>`,'sm');
+  try{
+    const alerts=buildAlerts();
+    const dep=calcDependencia();
+    const activos=proveedores.filter(p=>(p.estado||'activo')==='activo');
+    const avgSc=activos.length?Math.round(activos.map(p=>sc(p)).reduce((a,b)=>a+b,0)/activos.length):0;
+    const gastMes=pedidos.filter(p=>isThisMonth(p.fecha)).reduce((s,p)=>s+(p.importe||0),0);
+    const presPend=presupuestos.filter(p=>p.estado==='enviado');
+
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':aiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',max_tokens:1200,
+        system:`Eres el asistente comercial de Macor Suministros. Genera un informe semanal ejecutivo en español. Sé directo, práctico y accionable. Usa emojis para hacer el informe más visual.`,
+        messages:[{role:'user',content:`Genera el informe semanal con estos datos:
+
+ESTADO GENERAL:
+- ${proveedores.length} proveedores (${activos.length} activos)
+- Score medio: ${avgSc}/100
+- Gasto este mes: ${fmt(gastMes)}
+- Alertas urgentes: ${alerts.filter(a=>a.nivel==='alta').length}
+- Dependencia: ${dep.pct}% del gasto en ${dep.n} proveedores
+
+ALERTAS ACTIVAS:
+${alerts.slice(0,5).map(a=>`- [${a.nivel.toUpperCase()}] ${a.t}: ${a.d}`).join('\n')||'- Sin alertas'}
+
+PRESUPUESTOS PENDIENTES:
+${presPend.slice(0,5).map(p=>{const cl=clientes_v.find(x=>x.id===p.clienteId);return`- ${p.titulo||'Sin título'} (${cl?.nombre||'sin cliente'}): ${fmtK(p.total||0)} · ${daysDiff(p.fecha)}d sin respuesta`;}).join('\n')||'- Sin presupuestos pendientes'}
+
+TOP 3 PROVEEDORES:
+${activos.map(p=>({...p,_sc:sc(p)})).sort((a,b)=>b._sc-a._sc).slice(0,3).map(p=>`- ${p.nombre}: score ${p._sc}, margen ${p.margen||'?'}%, entrega ${p.entrega||'?'}d`).join('\n')}
+
+Estructura el informe con estas secciones:
+1. 📊 Resumen ejecutivo (2-3 frases)
+2. ⚠️ Acciones urgentes esta semana (máximo 3 puntos concretos)
+3. 💡 Oportunidad detectada (1 cosa que podría mejorar)
+4. 📈 Tendencia (1 observación sobre la evolución)`}]
+      })
+    });
+    const data=await res.json();
+    const informe=data.content?.[0]?.text||'No se pudo generar el informe.';
+    showModal(`
+    <div class="mh"><h2>📊 Informe semanal — ${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}</h2><button class="xb" onclick="closeModal()">✕</button></div>
+    <div class="mb"><div style="font-size:.85rem;line-height:1.8;color:var(--t);white-space:pre-wrap;">${esc(informe).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div></div>
+    <div class="mf"><button class="btn bn-ghost" onclick="closeModal()">Cerrar</button><button class="btn bn-ai" onclick="goTo('asistente');closeModal()">Abrir chat IA</button></div>`,true);
+  }catch(e){closeModal();toast('Error generando informe','err');}
+}
+
+// ══════════════════════════════════════════════════════════════
+// MEJORA rDash — añadir informe semanal y recordatorios
+// ══════════════════════════════════════════════════════════════
+// Patch dashboard to show reminders and weekly report button
+const _origRDash=rDash;
+function rDash(){
+  _origRDash();
+  // Add weekly report button to topbar actions
+  const tbAct=ge('tb-act');
+  if(tbAct){
+    const btn=document.createElement('button');
+    btn.className='btn bn-ai btn-sm';
+    btn.textContent='📊 Informe IA';
+    btn.onclick=generarInformeSemanal;
+    tbAct.insertBefore(btn,tbAct.firstChild);
+  }
+  // Add reminders section if there are diary entries with reminders due
+  const hoy=today();
+  const recToday=diario.filter(d=>d.recordatorio&&d.recordatorio<=hoy&&!d.recordatorioVisto);
+  if(recToday.length>0){
+    const content=ge('content');
+    if(content){
+      const banner=document.createElement('div');
+      banner.style.cssText='background:var(--pu2);border:1px solid rgba(138,92,245,.3);border-radius:var(--r2);padding:.75rem 1rem;margin-bottom:1rem;cursor:pointer;';
+      banner.innerHTML=`<div style="font-weight:600;font-size:.82rem;color:var(--purple);margin-bottom:.375rem;">🔔 ${recToday.length} recordatorio${recToday.length>1?'s':''} para hoy</div>${recToday.slice(0,2).map(d=>`<div style="font-size:.75rem;color:var(--t2);">→ ${esc(d.texto?.slice(0,80)||'')}</div>`).join('')}`;
+      banner.onclick=()=>goTo('diario');
+      content.insertBefore(banner,content.firstChild);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// MEJORAR DIARIO — añadir campo recordatorio
+// ══════════════════════════════════════════════════════════════
+const _origOpenDiarioForm=openDiarioForm;
+function openDiarioForm(id, preProvId){
+  const d=id?diario.find(x=>x.id===id):{};
+  const pid=preProvId||d.provId||'';
+  showModal(`
+  <div class="mh"><h2>${id?'Editar nota':'Nueva nota del diario'}</h2><button class="xb" onclick="closeModal()">✕</button></div>
+  <div class="mb"><div class="fg">
+    <div><label class="fl">Fecha</label><input id="di-fecha" type="date" value="${d.fecha||today()}"/></div>
+    <div><label class="fl">Proveedor relacionado</label><select class="fsel" id="di-prov"><option value="">— Ninguno —</option>${proveedores.map(p=>`<option value="${p.id}" ${(pid||d.provId)===p.id?'selected':''}>${esc(p.nombre)}</option>`).join('')}</select></div>
+    <div class="full"><label class="fl">Nota *</label><textarea id="di-txt" style="height:130px;" placeholder="Ej: Llamé a Luis de Tornipro. Me prometió bajar el mínimo a 100€ en enero…">${esc(d.texto||'')}</textarea></div>
+    <div><label class="fl">🔔 Recordatorio para</label><input id="di-rec" type="date" value="${d.recordatorio||''}"/></div>
+    <div><label class="fl">Recordatorio — texto</label><input id="di-rec-txt" value="${esc(d.recordatorioTexto||'')}" placeholder="Ej: Llamar para confirmar el acuerdo"/></div>
+  </div></div>
+  <div class="mf"><button class="btn bn-ghost" onclick="closeModal()">Cancelar</button><button class="btn bn-gold" onclick="saveDiario('${id||''}')">Guardar nota</button></div>`,'sm');
+}
+
+const _origSaveDiario=saveDiario;
+async function saveDiario(id){
+  const txt=ge('di-txt')?.value.trim();if(!txt){toast('Escribe algo','err');return;}
+  const data={texto:txt,fecha:gv('di-fecha'),provId:gv('di-prov'),recordatorio:gv('di-rec'),recordatorioTexto:gv('di-rec-txt'),recordatorioVisto:false,updatedAt:new Date().toISOString()};
+  await saveDoc('diario',id,data);closeModal();toast('Nota guardada ✓','ok');
+}
+
+// ══════════════════════════════════════════════════════════════
+// MEJORAR CHAT — persistencia de memoria
+// ══════════════════════════════════════════════════════════════
+const _origSendChat=sendChat;
+async function sendChat(){
+  // Restore memory from localStorage on first message
+  if(chatHist.length===0&&chatMemory.length>0){
+    chatHist=[...chatMemory];
+  }
+  await _origSendChat();
+  // Save last 20 messages to memory
+  chatMemory=chatHist.slice(-20);
+  localStorage.setItem('macor_chat_mem',JSON.stringify(chatMemory));
+}
+
+// Add clear memory button to asistente
+const _origRAsistente=rAsistente;
+function rAsistente(){
+  _origRAsistente();
+  setTimeout(()=>{
+    const tbAct=ge('tb-act');
+    if(tbAct){
+      const btn=document.createElement('button');
+      btn.className='btn bn-ghost btn-sm';
+      btn.textContent='🗑 Limpiar chat';
+      btn.onclick=()=>{chatHist=[];chatMemory=[];localStorage.removeItem('macor_chat_mem');rAsistente();toast('Chat limpiado');};
+      tbAct.appendChild(btn);
+      // Weekly report button
+      const btn2=document.createElement('button');
+      btn2.className='btn bn-ai btn-sm';
+      btn2.textContent='📊 Informe semanal';
+      btn2.onclick=generarInformeSemanal;
+      tbAct.insertBefore(btn2,tbAct.firstChild);
+    }
+  },50);
+}
+
+// ══════════════════════════════════════════════════════════════
+// DEMO DATA — nuevas colecciones
+// ══════════════════════════════════════════════════════════════
+function dClientes(){return[
+  {id:'cv1',nombre:'Juan García',empresa:'Construcciones García SL',cif:'B12345678',telefono:'666111222',email:'jgarcia@consgarcía.es',direccion:'Calle Mayor 12',poblacion:'Valencia',pago:'30 días',notas:'Cliente desde 2022. Paga puntual.'},
+  {id:'cv2',nombre:'María López',empresa:'Reformas López e Hijos',cif:'B87654321',telefono:'677222333',email:'mlopez@reformaslopez.com',poblacion:'Alicante',pago:'Contado',notas:'Pequeña empresa de reformas. Pedidos frecuentes pero pequeños.'},
+  {id:'cv3',nombre:'Carlos Martínez',empresa:'Instalaciones Martínez SA',cif:'A11223344',telefono:'688333444',email:'cmartinez@instmartinez.es',poblacion:'Murcia',pago:'60 días',notas:'Gran cliente. Proyectos industriales grandes.'},
+];}
+function dPres(){
+  const h=d=>{const dt=new Date();dt.setDate(dt.getDate()-d);return dt.toISOString().split('T')[0];};
+  return[
+    {id:'pres1',titulo:'Suministro tornillería nave 2',clienteId:'cv1',numero:'PRE-2024-001',fecha:h(3),validezDias:30,estado:'enviado',descuento:5,iva:21,lineas:[{nombre:'Tornillo M6x20 inox A2',referencia:'TM6-20-A2',proveedorId:'p1',coste:0.08,pvp:0.13,cantidad:5000,unidad:'ud'},{nombre:'Tornillo M8x25 inox',referencia:'TM8-25',proveedorId:'p1',coste:0.12,pvp:0.19,cantidad:2000,unidad:'ud'}],total:862.4,notas:'Entrega en obra. Confirmar fecha con el encargado.'},
+    {id:'pres2',titulo:'Material eléctrico reforma oficinas',clienteId:'cv3',numero:'PRE-2024-002',fecha:h(8),validezDias:15,estado:'aceptado',descuento:0,iva:21,lineas:[{nombre:'Cable H07V-K 2.5mm',referencia:'H07-2.5',proveedorId:'p7',coste:1.20,pvp:1.90,cantidad:300,unidad:'m'}],total:689.1,notas:''},
+    {id:'pres3',titulo:'Pintura exterior naves industriales',clienteId:'cv1',numero:'PRE-2024-003',fecha:h(20),validezDias:30,estado:'rechazado',descuento:0,iva:21,lineas:[{nombre:'Pintura plástica blanca 20L',referencia:'PPB-20',proveedorId:'p3',coste:36.50,pvp:58,cantidad:30,unidad:'cubo'}],total:2104.2,notas:'Cliente eligió otro proveedor por precio.'},
+    {id:'pres4',titulo:'Fontanería comunidad vecinos',clienteId:'cv2',numero:'PRE-2024-004',fecha:h(1),validezDias:30,estado:'borrador',descuento:3,iva:21,lineas:[{nombre:'Silicona neutra 310ml',referencia:'SN-310',proveedorId:'p9',coste:4.20,pvp:7,cantidad:50,unidad:'ud'}],total:412.6,notas:'Pendiente confirmar cantidad exacta.'},
+  ];
+}
 
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 </script>
