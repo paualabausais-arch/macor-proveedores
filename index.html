@@ -542,6 +542,8 @@ function goTo(v){
   document.querySelectorAll('.sbi').forEach(el=>el.classList.toggle('on',el.id==='sbi-'+v));
   const m=META[v]||{t:v,s:''};ge('tb-t').textContent=m.t;ge('tb-s').textContent=m.s;
   render();closeFab();
+  const btn=ge('btn-present');
+  if(btn)btn.style.display=['proveedores','ranking','estadisticas','comparar'].includes(v)?'':'none';
 }
 function render(){
   const fns={dashboard:rDash,alertas:rAlertas,diario:rDiario,proveedores:rProveedores,articulos:rArticulos,productos:rArticulos,calculadora:rCalculadora,objetivos:rObjetivos,buscador:rBuscador,pedidos:rPedidos,ranking:rRanking,comparar:rComparar,estadisticas:rStats,asistente:rAsistente};
@@ -1030,6 +1032,7 @@ function openFicha(id){
       <div class="tab" id="ft-hist" onclick="fichaTab('hist','${p.id}')">Historial precios</div>
       <div class="tab" id="ft-docs" onclick="fichaTab('docs','${p.id}')">Docs (${(p.docs||[]).length})</div>
       <div class="tab" id="ft-inc" onclick="fichaTab('inc','${p.id}')">Incidencias (${(p.incidencias||[]).length})</div>
+      <div class="tab" id="ft-contactos" onclick="fichaTab('contactos','${p.id}')">Contactos (${(p.contactos||[]).length})</div>
     </div>
     <div id="ficha-body"></div>
   </div>
@@ -1129,6 +1132,28 @@ function fichaTab(tab,id){
       <div class="ali-ico" style="background:${inc.nivel==='alta'?'var(--rd2)':inc.nivel==='media'?'var(--am2)':'var(--bl2)'};">${inc.nivel==='alta'?'🚨':inc.nivel==='media'?'⚠️':'ℹ️'}</div>
       <div style="flex:1;"><div style="font-size:.78rem;font-weight:500;">${esc(inc.texto)}</div><div style="font-size:.67rem;color:var(--t3);margin-top:2px;">${fmtDate(inc.fecha)} · <span class="bdg ${inc.nivel==='alta'?'bred':inc.nivel==='media'?'bamb':'bblu'}">${inc.nivel}</span></div></div>
     </div>`).join('')}`;
+  }
+  else if(tab==='contactos'){
+    const contactos=[...(p.contactos||[])].sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0));
+    const tipoIcon={llamada:'📞',visita:'🤝',email:'✉️',whatsapp:'💬',reunion:'👥'};
+    el.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:.625rem;">
+      <button class="btn bn-gold btn-sm" onclick="openContactoForm('${id}')">+ Registrar contacto</button>
+    </div>
+    ${contactos.length===0?`<div class="empty" style="padding:1.5rem;"><div class="empty-i">📞</div><div class="empty-t">Sin contactos registrados</div><div class="empty-s">Registra cada llamada, visita o email para no perder el hilo.</div></div>`:''}
+    <div style="position:relative;padding-left:1.5rem;">
+      <div style="position:absolute;left:.5rem;top:0;bottom:0;width:1px;background:var(--b);"></div>
+      ${contactos.map(c=>`<div style="position:relative;margin-bottom:1rem;">
+        <div style="position:absolute;left:-1.25rem;top:3px;width:16px;height:16px;border-radius:50%;background:var(--s3);border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:9px;">${tipoIcon[c.tipo]||'📌'}</div>
+        <div style="background:var(--bg3);border-radius:var(--r2);padding:.75rem;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:.375rem;">
+            <span style="font-size:.68rem;font-family:var(--mono);color:var(--t3);">${fmtDate(c.fecha)}</span>
+            <span class="bdg bsrf" style="font-size:.6rem;">${c.tipo||'contacto'}</span>
+          </div>
+          <div style="font-size:.78rem;color:var(--t);line-height:1.6;">${esc(c.tema)}</div>
+          ${c.siguiente?`<div style="margin-top:.375rem;font-size:.7rem;color:var(--gold);">→ Pendiente: ${esc(c.siguiente)}</div>`:''}
+        </div>
+      </div>`).join('')}
+    </div>`;
   }
 }
 function openIncPre(id){ge('inc-prov')&&(ge('inc-prov').value=id);if(!ge('inc-txt'))openIncPicker();else ge('inc-prov').value=id;}
@@ -2418,62 +2443,12 @@ function togglePresentation(){
 // SOBREESCRIBIR rProveedores para mostrar btn-present
 // y añadir modo presentación
 // ══════════════════════════════════════════════════════
-const _origGoTo=goTo;
-function goTo(v){
-  _origGoTo(v);
-  const btn=ge('btn-present');
-  if(btn)btn.style.display=['proveedores','ranking','estadisticas','comparar'].includes(v)?'':'none';
-}
+// goTo patched: show/hide presentation button per view
+// (handled directly in the original goTo below)
 
 // ══════════════════════════════════════════════════════
 // PATCH fichaTab para añadir pestaña Contactos
 // ══════════════════════════════════════════════════════
-const _origFichaTab=fichaTab;
-function fichaTab(tab,id){
-  // If not 'contactos', delegate to original
-  if(tab!=='contactos'){_origFichaTab(tab,id);return;}
-  document.querySelectorAll('[id^="ft-"]').forEach(el=>el.classList.toggle('on',el.id==='ft-contactos'));
-  const p=proveedores.find(x=>x.id===id);if(!p)return;
-  const contactos=[...(p.contactos||[])].sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0));
-  const el=ge('ficha-body');
-  const tipoIcon={llamada:'📞',visita:'🤝',email:'✉️',whatsapp:'💬',reunion:'👥'};
-  el.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:.625rem;">
-    <button class="btn bn-gold btn-sm" onclick="openContactoForm('${id}')">+ Registrar contacto</button>
-  </div>
-  ${contactos.length===0?`<div class="empty" style="padding:1.5rem;"><div class="empty-i">📞</div><div class="empty-t">Sin contactos registrados</div><div class="empty-s">Registra cada llamada, visita o email para no perder el hilo.</div></div>`:''}
-  <div style="position:relative;padding-left:1.5rem;">
-    <div style="position:absolute;left:.5rem;top:0;bottom:0;width:1px;background:var(--b);"></div>
-    ${contactos.map(c=>`<div style="position:relative;margin-bottom:1rem;">
-      <div style="position:absolute;left:-1.25rem;top:3px;width:16px;height:16px;border-radius:50%;background:var(--s3);border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:9px;">${tipoIcon[c.tipo]||'📌'}</div>
-      <div style="background:var(--bg3);border-radius:var(--r2);padding:.75rem;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:.375rem;">
-          <span style="font-size:.68rem;font-family:var(--mono);color:var(--t3);">${fmtDate(c.fecha)}</span>
-          <span class="bdg bsrf" style="font-size:.6rem;">${c.tipo||'contacto'}</span>
-        </div>
-        <div style="font-size:.78rem;color:var(--t);line-height:1.6;">${esc(c.tema)}</div>
-        ${c.siguiente?`<div style="margin-top:.375rem;font-size:.7rem;color:var(--gold);">→ Pendiente: ${esc(c.siguiente)}</div>`:''}
-      </div>
-    </div>`).join('')}
-  </div>`;
-}
-
-// Patch openFicha para añadir pestaña Contactos
-const _origOpenFicha=openFicha;
-function openFicha(id){
-  _origOpenFicha(id);
-  // Add contactos tab after modal renders
-  setTimeout(()=>{
-    const p=proveedores.find(x=>x.id===id);if(!p)return;
-    const tabsEl=document.querySelector('.tabs');
-    if(tabsEl&&!ge('ft-contactos')){
-      const div=document.createElement('div');
-      div.className='tab';div.id='ft-contactos';
-      div.textContent=`Contactos (${(p.contactos||[]).length})`;
-      div.onclick=()=>fichaTab('contactos',id);
-      tabsEl.appendChild(div);
-    }
-  },50);
-}
 
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 </script>
