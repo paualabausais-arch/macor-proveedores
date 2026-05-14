@@ -288,6 +288,22 @@ input[type=date]{font-family:var(--mono);font-size:.78rem;}
   .content{padding:1cm;}
   .card{border:1px solid #ccc;}
 }
+
+/* ── PRESENTATION MODE ── */
+body.present-mode .kval,
+body.present-mode .mtile-v,
+body.present-mode [style*="font-family:var(--mono)"],
+body.present-mode td[style*="font-weight:700"],
+body.present-mode td[style*="font-weight:600"] {
+  filter: blur(5px);
+  user-select: none;
+}
+body.present-mode .kval.grn,
+body.present-mode .kval.red,
+body.present-mode .kval.amb,
+body.present-mode .kval.gld { color: var(--t2) !important; filter: none; }
+body.present-mode td:has([style*="font-family:var(--mono)"]) { filter: blur(4px); }
+
 </style>
 </head>
 <body>
@@ -341,9 +357,13 @@ input[type=date]{font-family:var(--mono);font-size:.78rem;}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       Proveedores
     </div>
-    <div class="sbi" id="sbi-productos" onclick="goTo('productos')">
+    <div class="sbi" id="sbi-articulos" onclick="goTo('articulos')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-      Productos
+      Artículos
+    </div>
+    <div class="sbi" id="sbi-calculadora" onclick="goTo('calculadora')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/></svg>
+      Calculadora
     </div>
     <div class="sbi" id="sbi-pedidos" onclick="goTo('pedidos')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
@@ -361,6 +381,14 @@ input[type=date]{font-family:var(--mono);font-size:.78rem;}
     <div class="sbi" id="sbi-estadisticas" onclick="goTo('estadisticas')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>
       Estadísticas
+    </div>
+    <div class="sbi" id="sbi-objetivos" onclick="goTo('objetivos')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      Objetivos
+    </div>
+    <div class="sbi" id="sbi-buscador" onclick="goTo('buscador')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      Buscar proveedor
     </div>
     <div class="sb-sec">Inteligencia</div>
     <div class="sbi" id="sbi-asistente" onclick="goTo('asistente')">
@@ -387,6 +415,7 @@ input[type=date]{font-family:var(--mono);font-size:.78rem;}
         <input id="gs-input" placeholder="Buscar en todo…" autocomplete="off" oninput="gsSearch()" onblur="setTimeout(gsClose,200)" onfocus="gsSearch()"/>
         <div class="gs-results" id="gs-results"></div>
       </div>
+      <button id="btn-present" class="btn bn-ghost btn-sm" onclick="togglePresentation()" title="Modo presentación" style="display:none;">👁 Presentar</button>
       <div id="tb-act" style="display:flex;gap:6px;align-items:center;flex-shrink:0;"></div>
     </div>
     <div class="content" id="content"></div>
@@ -398,6 +427,7 @@ input[type=date]{font-family:var(--mono);font-size:.78rem;}
   <div class="fab-menu" id="fab-menu">
     <div class="fab-item" onclick="fabAction('pedido')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>Pedido rápido</div>
     <div class="fab-item" onclick="fabAction('proveedor')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Nuevo proveedor</div>
+    <div class="fab-item" onclick="fabAction('excel')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>Importar Excel</div>
     <div class="fab-item" onclick="fabAction('diario')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Nota rápida</div>
     <div class="fab-item" onclick="fabAction('incidencia')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Incidencia</div>
   </div>
@@ -497,7 +527,10 @@ const META={
   alertas:{t:'Alertas',s:'Avisos automáticos'},
   diario:{t:'Diario comercial',s:'Notas y seguimiento'},
   proveedores:{t:'Proveedores',s:'Gestión completa'},
-  productos:{t:'Productos & Precios',s:'Catálogo comparativo'},
+  articulos:{t:'Artículos & Catálogo',s:'Gestión de referencias'},
+  calculadora:{t:'Calculadora de margen',s:'Calcula precios al instante'},
+  objetivos:{t:'Objetivos',s:'Seguimiento de metas'},
+  buscador:{t:'Buscar proveedor ideal',s:'Para un pedido concreto'},
   pedidos:{t:'Pedidos',s:'Historial y rappel'},
   ranking:{t:'Ranking',s:'Clasificación inteligente'},
   comparar:{t:'Comparar',s:'Análisis lado a lado'},
@@ -511,7 +544,7 @@ function goTo(v){
   render();closeFab();
 }
 function render(){
-  const fns={dashboard:rDash,alertas:rAlertas,diario:rDiario,proveedores:rProveedores,productos:rProductos,pedidos:rPedidos,ranking:rRanking,comparar:rComparar,estadisticas:rStats,asistente:rAsistente};
+  const fns={dashboard:rDash,alertas:rAlertas,diario:rDiario,proveedores:rProveedores,articulos:rArticulos,productos:rArticulos,calculadora:rCalculadora,objetivos:rObjetivos,buscador:rBuscador,pedidos:rPedidos,ranking:rRanking,comparar:rComparar,estadisticas:rStats,asistente:rAsistente};
   (fns[CV]||rProveedores)();updateBadges();
 }
 
@@ -617,6 +650,7 @@ function fabAction(type){
   closeFab();
   if(type==='pedido')openPedRapido();
   else if(type==='proveedor'){goTo('proveedores');setTimeout(()=>openProvForm(null),80);}
+  else if(type==='excel')openImportExcel();
   else if(type==='diario')openDiarioForm(null);
   else if(type==='incidencia')openIncPicker();
 }
@@ -1679,6 +1713,766 @@ function dDiary(){
     {id:'di4',texto:'Solicité catálogos actualizados a Eléctrica del Mediterráneo. Me los mandan esta semana.',fecha:h(12),provId:'p7'},
     {id:'di5',texto:'Revisión anual de condiciones pendiente con proveedores de tornillería. Objetivo: bajar pedido mínimo y subir rappel al 4% en Tornipro.',fecha:h(20),provId:null},
   ];
+}
+
+// ══════════════════════════════════════════════════════
+// ARTÍCULOS — Catálogo completo vinculado a pedidos
+// ══════════════════════════════════════════════════════
+function rArticulos(){
+  ge('tb-act').innerHTML=`
+    <button class="btn bn-surf btn-sm exp-btn" onclick="exportarPDF('articulos')">⬇ PDF</button>
+    <button class="btn bn-surf btn-sm" onclick="openImportExcel()">📥 Importar Excel</button>
+    <button class="btn bn-gold btn-sm" onclick="openArticuloForm(null)">+ Artículo</button>`;
+  const q=(ge('q-art')||{value:''}).value.toLowerCase();
+  const cat=(ge('f-art-cat')||{value:''}).value;
+  let list=q?productos.filter(p=>`${p.nombre}${p.referencia||''}${p.categoria||''}`.toLowerCase().includes(q)):productos;
+  if(cat)list=list.filter(p=>p.categoria===cat);
+  const cats=[...new Set(productos.map(p=>p.categoria).filter(Boolean))].sort();
+  // Agrupar por referencia normalizada para comparar precios
+  const grupos={};
+  list.forEach(p=>{
+    const k=p.referencia?p.referencia.toLowerCase():(p.nombre||'').toLowerCase();
+    if(!grupos[k])grupos[k]=[];grupos[k].push(p);
+  });
+
+  ge('content').innerHTML=`
+  <div class="krow">
+    <div class="kpi"><div class="klbl">Referencias</div><div class="kval">${Object.keys(grupos).length}</div></div>
+    <div class="kpi"><div class="klbl">Entradas totales</div><div class="kval">${productos.length}</div><div class="ksub">en todos los proveedores</div></div>
+    <div class="kpi"><div class="klbl">Categorías</div><div class="kval">${cats.length}</div></div>
+    <div class="kpi"><div class="klbl">Con varios proveedores</div><div class="kval gld">${Object.values(grupos).filter(g=>g.length>1).length}</div><div class="ksub">comparables</div></div>
+  </div>
+  <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center;">
+    <div style="position:relative;flex:1;min-width:160px;">
+      <svg style="position:absolute;left:.55rem;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none;" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input style="padding-left:1.875rem;" id="q-art" placeholder="Buscar referencia, nombre…" value="${q}" oninput="rArticulos()"/>
+    </div>
+    <select class="fsel" id="f-art-cat" onchange="rArticulos()" style="width:auto;">
+      <option value="">Todas las categorías</option>
+      ${cats.map(c=>`<option value="${esc(c)}" ${cat===c?'selected':''}>${esc(c)}</option>`).join('')}
+    </select>
+  </div>
+  ${list.length===0?`<div class="empty"><div class="empty-i">📦</div><div class="empty-t">Sin artículos</div><div class="empty-s">Añade artículos para tener un catálogo organizado y usarlos en los pedidos.</div></div>`:''}
+  <div style="display:flex;flex-direction:column;gap:.75rem;">
+  ${Object.entries(grupos).map(([ref,arts])=>{
+    const nums=arts.filter(p=>p.precio!=null).map(p=>p.precio);
+    const minP=nums.length?Math.min(...nums):null;
+    const maxP=nums.length?Math.max(...nums):null;
+    const diff=minP!=null&&maxP!=null&&minP!==maxP?((maxP-minP)/minP*100).toFixed(1):null;
+    const best=arts.find(p=>p.precio===minP);
+    return `<div class="card" style="padding:1rem;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.75rem;gap:.75rem;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:.88rem;">${esc(arts[0].nombre)}</div>
+          <div style="font-size:.67rem;color:var(--t3);margin-top:2px;display:flex;align-items:center;gap:8px;">
+            ${arts[0].referencia?`<span style="font-family:var(--mono);background:var(--bg3);padding:1px 6px;border-radius:3px;">${esc(arts[0].referencia)}</span>`:''}
+            ${arts[0].categoria?`<span class="bdg bblu">${esc(arts[0].categoria)}</span>`:''}
+            <span>${arts.length} proveedor${arts.length!==1?'es':''}</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          ${diff?`<span style="font-size:.67rem;background:var(--gn2);color:var(--green);padding:2px 8px;border-radius:4px;">💰 Ahorro potencial ${diff}%</span>`:''}
+          <button class="btn bn-gold btn-xs" onclick="pedidoDesdeArticulo('${arts[0].nombre}','${arts[0].referencia||''}')">🛒 Pedir</button>
+          <button class="btn bn-ghost btn-xs" onclick="openArticuloForm(null,'','${esc(arts[0].nombre)}','${esc(arts[0].referencia||'')}','${esc(arts[0].categoria||'')}')">+ Añadir proveedor</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.45rem;">
+      ${arts.sort((a,b)=>(a.precio||999)-(b.precio||999)).map(art=>{
+        const prov=proveedores.find(x=>x.id===art.proveedorId);
+        const isBest=art.precio!=null&&art.precio===minP;
+        const margenCalc=art.precio&&prov?.margen?art.precio*(1+prov.margen/100):null;
+        return `<div style="background:${isBest?'var(--gn2)':'var(--bg3)'};border:1px solid ${isBest?'rgba(30,201,122,.25)':'var(--b)'};border-radius:var(--r3);padding:.625rem .75rem;position:relative;">
+          ${isBest?`<div style="position:absolute;top:4px;right:4px;font-size:.58rem;background:var(--green);color:#fff;padding:1px 5px;border-radius:3px;font-weight:600;">MEJOR PRECIO</div>`:''}
+          <div style="font-size:.72rem;color:var(--t2);margin-bottom:3px;padding-right:${isBest?'52px':'0'};">${esc(prov?.nombre||'Sin proveedor')}</div>
+          <div style="font-size:1.05rem;font-weight:800;font-family:var(--mono);color:${isBest?'var(--green)':'var(--t)'};">${art.precio!=null?fmt(art.precio):'Sin precio'}<span style="font-size:.58rem;font-weight:400;color:var(--t3);"> /${art.unidad||'ud'}</span></div>
+          ${margenCalc?`<div style="font-size:.65rem;color:var(--t3);margin-top:2px;">Venta: ~${fmt(margenCalc)}</div>`:''}
+          <div style="display:flex;gap:3px;margin-top:.45rem;">
+            <button class="btn bn-ghost btn-xs" onclick="openArticuloForm('${art.id}')">Editar</button>
+            <button class="btn bn-red btn-xs" onclick="delArt('${art.id}')">✕</button>
+          </div>
+        </div>`;
+      }).join('')}
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function openArticuloForm(id, preProvId, preNombre, preRef, preCat){
+  const p=id?productos.find(x=>x.id===id):{};
+  const pid=preProvId||p.proveedorId||'';
+  const artCats=[...new Set(productos.map(x=>x.categoria).filter(Boolean))].sort();
+  const artNombres=[...new Set(productos.map(x=>x.nombre).filter(Boolean))].sort();
+  showModal(`
+  <div class="mh"><h2>${id?'Editar artículo':'Nuevo artículo'}</h2><button class="xb" onclick="closeModal()">✕</button></div>
+  <div class="mb"><div class="fg">
+    <div class="full"><label class="fl">Nombre del artículo *</label>
+      <input id="art-n" value="${esc(p.nombre||preNombre||'')}" list="art-n-list" placeholder="Ej: Tornillo M6x20 inox A2"/>
+      <datalist id="art-n-list">${artNombres.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+    </div>
+    <div><label class="fl">Referencia / Código</label><input id="art-ref" value="${esc(p.referencia||preRef||'')}" placeholder="Ej: TM6-20-A2"/></div>
+    <div><label class="fl">Categoría</label><input id="art-cat" value="${esc(p.categoria||preCat||'')}" list="art-cat-list" placeholder="Tornillería, Pintura…"/>
+      <datalist id="art-cat-list">${artCats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
+    </div>
+    <div><label class="fl">Proveedor *</label>
+      <select class="fsel" id="art-prov">
+        <option value="">— Seleccionar —</option>
+        ${proveedores.filter(p=>(p.estado||'activo')==='activo').map(x=>`<option value="${x.id}" ${x.id===pid?'selected':''}>${esc(x.nombre)}</option>`).join('')}
+      </select>
+    </div>
+    <div><label class="fl">Precio de coste (€)</label><input id="art-p" type="number" min="0" step=".0001" value="${p.precio??''}"/></div>
+    <div><label class="fl">Unidad</label><input id="art-u" value="${esc(p.unidad||'ud')}" placeholder="ud, kg, m, l, caja…"/></div>
+    <div class="full"><label class="fl">Descripción / Notas</label><textarea id="art-desc" style="height:60px;">${esc(p.descripcion||'')}</textarea></div>
+  </div>
+  <div style="background:var(--bg3);border-radius:var(--r2);padding:.875rem;margin-top:.5rem;">
+    <div style="font-size:.65rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.5rem;">Vista previa de margen</div>
+    <div id="art-preview" style="font-size:.8rem;color:var(--t2);">Introduce precio y selecciona proveedor para ver el margen estimado.</div>
+  </div>
+  </div>
+  <div class="mf"><button class="btn bn-ghost" onclick="closeModal()">Cancelar</button><button class="btn bn-gold" onclick="saveArticulo('${id||''}')">Guardar artículo</button></div>`,'sm');
+  // Live preview
+  setTimeout(()=>{
+    const updatePrev=()=>{
+      const precio=parseFloat(ge('art-p')?.value)||0;
+      const provId=ge('art-prov')?.value;
+      const prov=proveedores.find(x=>x.id===provId);
+      const el=ge('art-preview');if(!el)return;
+      if(!precio||!prov?.margen){el.textContent='Introduce precio y selecciona proveedor para ver el margen estimado.';return;}
+      const pvp=precio/(1-prov.margen/100);
+      const benef=pvp-precio;
+      el.innerHTML=`Precio venta sugerido: <strong style="color:var(--gold);">${fmt(pvp)}</strong> · Beneficio: <strong style="color:var(--green);">${fmt(benef)}</strong> · Margen: ${prov.margen}%`;
+    };
+    ge('art-p')?.addEventListener('input',updatePrev);
+    ge('art-prov')?.addEventListener('change',updatePrev);
+    updatePrev();
+  },50);
+}
+async function saveArticulo(id){
+  const n=ge('art-n')?.value.trim(),prov=gv('art-prov');
+  if(!n||!prov){toast('Nombre y proveedor obligatorios','err');return;}
+  const data={nombre:n,referencia:gv('art-ref'),categoria:gv('art-cat'),proveedorId:prov,precio:num('art-p'),unidad:gv('art-u')||'ud',descripcion:gv('art-desc'),updatedAt:new Date().toISOString()};
+  await saveDoc('productos',id,data);closeModal();toast('Artículo guardado ✓','ok');
+}
+async function delArt(id){if(!confirm('¿Eliminar este artículo?'))return;await delDoc('productos',id);toast('Eliminado');}
+
+// Pedir desde artículo — abre pedido rápido con artículo precargado
+function pedidoDesdeArticulo(nombre,referencia){
+  openPedRapido();
+  setTimeout(()=>{
+    const el=ge('pr-desc');
+    if(el)el.value=nombre+(referencia?' ('+referencia+')':'');
+  },60);
+}
+
+// ══════════════════════════════════════════════════════
+// IMPORTAR DESDE EXCEL
+// ══════════════════════════════════════════════════════
+function openImportExcel(){
+  showModal(`
+  <div class="mh"><h2>📥 Importar desde Excel</h2><button class="xb" onclick="closeModal()">✕</button></div>
+  <div class="mb">
+    <div style="background:var(--bg3);border-radius:var(--r2);padding:1rem;margin-bottom:1rem;">
+      <div style="font-size:.75rem;font-weight:700;color:var(--t2);margin-bottom:.5rem;">Formato requerido del Excel</div>
+      <div style="font-size:.7rem;color:var(--t3);line-height:1.7;">
+        La primera fila debe tener estos encabezados (puedes tener solo algunos):<br>
+        <span style="font-family:var(--mono);background:var(--bg4);padding:2px 6px;border-radius:3px;font-size:.68rem;">nombre | categoria | contacto | telefono | email | margen | entrega | pago | pedidoMin | fiabilidad | calidad | notas</span>
+      </div>
+    </div>
+    <div style="border:2px dashed var(--b2);border-radius:var(--r);padding:2rem;text-align:center;cursor:pointer;transition:all .15s;" id="drop-zone"
+      onmouseenter="this.style.borderColor='var(--gold)'" onmouseleave="this.style.borderColor=''"
+      onclick="ge('excel-input').click()">
+      <div style="font-size:2rem;margin-bottom:.5rem;">📊</div>
+      <div style="font-weight:600;font-size:.85rem;margin-bottom:.375rem;">Haz clic o arrastra tu archivo Excel aquí</div>
+      <div style="font-size:.72rem;color:var(--t3);">Formatos aceptados: .xlsx, .xls, .csv</div>
+      <input type="file" id="excel-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="processExcel(this.files[0])"/>
+    </div>
+    <div id="import-preview" style="margin-top:1rem;"></div>
+  </div>
+  <div class="mf" id="import-footer">
+    <button class="btn bn-ghost" onclick="closeModal()">Cancelar</button>
+  </div>`);
+
+  // Drag & drop
+  setTimeout(()=>{
+    const dz=ge('drop-zone');
+    if(!dz)return;
+    dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--gold)';dz.style.background='var(--g4)';});
+    dz.addEventListener('dragleave',()=>{dz.style.borderColor='';dz.style.background='';});
+    dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';dz.style.background='';const f=e.dataTransfer.files[0];if(f)processExcel(f);});
+  },50);
+}
+
+function processExcel(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      let rows=[];
+      if(file.name.endsWith('.csv')){
+        // Parse CSV
+        const text=e.target.result;
+        const lines=text.split('\n').filter(l=>l.trim());
+        const headers=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/['"]/g,''));
+        rows=lines.slice(1).map(line=>{
+          const vals=line.split(',').map(v=>v.trim().replace(/['"]/g,''));
+          const obj={};headers.forEach((h,i)=>{obj[h]=vals[i]||'';});
+          return obj;
+        });
+      } else {
+        // For xlsx we'd need SheetJS - inform user to use CSV
+        ge('import-preview').innerHTML=`<div style="background:var(--am2);border:1px solid rgba(240,160,48,.3);border-radius:var(--r2);padding:.875rem;font-size:.78rem;color:var(--amber);">⚠️ Para archivos Excel (.xlsx), guárdalos primero como CSV desde Excel (Archivo → Guardar como → CSV). Los CSV se importan directamente.</div>`;
+        return;
+      }
+      previewImport(rows);
+    }catch(err){toast('Error leyendo el archivo','err');}
+  };
+  if(file.name.endsWith('.csv'))reader.readAsText(file,'UTF-8');
+  else reader.readAsArrayBuffer(file);
+}
+
+function previewImport(rows){
+  const FIELD_MAP={
+    nombre:['nombre','name','proveedor','empresa','company'],
+    categoria:['categoria','category','tipo','type','familia'],
+    contacto:['contacto','contact','persona','responsable'],
+    telefono:['telefono','phone','tel','móvil','movil'],
+    email:['email','correo','mail'],
+    margen:['margen','margin','margen%','margen (%)'],
+    entrega:['entrega','delivery','dias','días','lead time'],
+    pago:['pago','payment','forma pago','forma de pago'],
+    pedidoMin:['pedido min','pedidomin','minimo','mínimo','min order'],
+    fiabilidad:['fiabilidad','reliability','confianza'],
+    calidad:['calidad','quality'],
+    notas:['notas','notes','observaciones','comentarios'],
+  };
+
+  // Map columns
+  const validRows=rows.filter(r=>r.nombre||r.name||r.proveedor||r.empresa);
+  if(!validRows.length){
+    ge('import-preview').innerHTML=`<div style="background:var(--rd2);border:1px solid rgba(240,72,72,.25);border-radius:var(--r2);padding:.875rem;font-size:.78rem;color:var(--red);">No se encontraron filas válidas. Asegúrate de que la primera fila tiene los encabezados correctos.</div>`;
+    return;
+  }
+
+  function getField(row, field){
+    const aliases=FIELD_MAP[field]||[field];
+    for(const a of aliases){const v=row[a]||row[a.toLowerCase()]||'';if(v)return v;}
+    return '';
+  }
+
+  const mapped=validRows.map(r=>({
+    nombre:getField(r,'nombre'),categoria:getField(r,'categoria'),contacto:getField(r,'contacto'),
+    telefono:getField(r,'telefono'),email:getField(r,'email'),
+    margen:parseFloat(getField(r,'margen'))||null,entrega:parseFloat(getField(r,'entrega'))||null,
+    pago:getField(r,'pago'),pedidoMin:parseFloat(getField(r,'pedidoMin'))||null,
+    fiabilidad:parseFloat(getField(r,'fiabilidad'))||null,calidad:parseFloat(getField(r,'calidad'))||null,
+    notas:getField(r,'notas'),estado:'activo',incidencias:[],historialPrecios:[],docs:[],
+  })).filter(r=>r.nombre);
+
+  ge('import-preview').innerHTML=`
+  <div style="margin-bottom:.75rem;"><div style="font-weight:600;font-size:.82rem;color:var(--green);margin-bottom:.375rem;">✓ ${mapped.length} proveedores listos para importar</div></div>
+  <div class="card" style="max-height:200px;overflow-y:auto;"><div class="tw"><table>
+    <thead><tr><th>Nombre</th><th>Categoría</th><th>Margen</th><th>Entrega</th></tr></thead>
+    <tbody>${mapped.slice(0,10).map(p=>`<tr><td style="font-weight:500;">${esc(p.nombre)}</td><td>${esc(p.categoria||'—')}</td><td>${p.margen!=null?p.margen+'%':'—'}</td><td>${p.entrega!=null?p.entrega+'d':'—'}</td></tr>`).join('')}</tbody>
+  </table></div></div>
+  ${mapped.length>10?`<div style="font-size:.68rem;color:var(--t3);margin-top:.375rem;">Y ${mapped.length-10} más…</div>`:''}`;
+
+  ge('import-footer').innerHTML=`
+  <button class="btn bn-ghost" onclick="closeModal()">Cancelar</button>
+  <button class="btn bn-gold" onclick="executeImport(${JSON.stringify(mapped).replace(/</g,'\\u003c').replace(/>/g,'\\u003e')})">Importar ${mapped.length} proveedores →</button>`;
+}
+
+async function executeImport(mapped){
+  let ok=0,err=0;
+  ge('import-footer').innerHTML=`<div style="font-size:.82rem;color:var(--t2);">Importando… <span id="imp-prog">0</span>/${mapped.length}</div>`;
+  for(let i=0;i<mapped.length;i++){
+    try{
+      await saveDoc('proveedores','',{...mapped[i],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
+      ok++;const el=ge('imp-prog');if(el)el.textContent=ok;
+    }catch(e){err++;}
+    await new Promise(r=>setTimeout(r,150));
+  }
+  closeModal();toast(`✓ ${ok} proveedores importados${err?` · ${err} errores`:''}`,err?'':'ok');
+}
+
+// ══════════════════════════════════════════════════════
+// CALCULADORA DE MARGEN
+// ══════════════════════════════════════════════════════
+function rCalculadora(){
+  ge('tb-act').innerHTML='';
+  ge('content').innerHTML=`
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      <!-- CALCULADORA DIRECTA -->
+      <div class="card cp">
+        <div class="stitle">🧮 Calcular precio de venta</div>
+        <div style="display:flex;flex-direction:column;gap:.75rem;">
+          <div><label class="fl">Precio de coste del proveedor (€)</label>
+            <input id="calc-coste" type="number" min="0" step=".01" placeholder="0.00" style="font-size:1.1rem;font-weight:500;" oninput="calcDirect()"/>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:4px;"><label class="fl" style="margin:0;">Margen deseado</label><span id="calc-m-val" style="font-weight:700;color:var(--gold);font-family:var(--mono);">30%</span></div>
+            <input type="range" id="calc-margen" min="0" max="70" step="1" value="30" style="width:100%;" oninput="ge('calc-m-val').textContent=this.value+'%';calcDirect()"/>
+            <div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--t3);"><span>0%</span><span>70%</span></div>
+          </div>
+          <!-- Selector de proveedor activo -->
+          <div><label class="fl">O usa el margen de un proveedor</label>
+            <select class="fsel" id="calc-prov" onchange="const p=proveedores.find(x=>x.id===this.value);if(p?.margen){ge('calc-margen').value=p.margen;ge('calc-m-val').textContent=p.margen+'%';}calcDirect()">
+              <option value="">— Seleccionar proveedor —</option>
+              ${proveedores.filter(p=>p.margen!=null).map(p=>`<option value="${p.id}">${esc(p.nombre)} (${p.margen}%)</option>`).join('')}
+            </select>
+          </div>
+          <div id="calc-result-direct" style="background:var(--bg);border-radius:var(--r2);padding:1.25rem;text-align:center;margin-top:.25rem;">
+            <div style="font-size:.72rem;color:var(--t3);margin-bottom:.375rem;">Introduce el precio de coste</div>
+          </div>
+        </div>
+      </div>
+      <!-- CALCULADORA INVERSA -->
+      <div class="card cp">
+        <div class="stitle">🔄 Calcular margen (inversa)</div>
+        <div style="display:flex;flex-direction:column;gap:.75rem;">
+          <div><label class="fl">Precio de coste (€)</label><input id="inv-coste" type="number" min="0" step=".01" placeholder="0.00" oninput="calcInverse()"/></div>
+          <div><label class="fl">Precio de venta al cliente (€)</label><input id="inv-venta" type="number" min="0" step=".01" placeholder="0.00" oninput="calcInverse()"/></div>
+          <div id="calc-result-inv" style="background:var(--bg);border-radius:var(--r2);padding:1rem;text-align:center;">
+            <div style="font-size:.72rem;color:var(--t3);">Introduce coste y venta para ver el margen</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      <!-- COMPARATIVA POR PROVEEDOR -->
+      <div class="card cp">
+        <div class="stitle">📊 ¿Qué proveedor me deja más?</div>
+        <div style="margin-bottom:.75rem;"><label class="fl">Precio de venta al cliente (€)</label><input id="cmp-venta" type="number" min="0" step=".01" placeholder="0.00" oninput="calcProvComp()"/></div>
+        <div id="cmp-result"><div style="font-size:.75rem;color:var(--t3);">Introduce el precio de venta para comparar.</div></div>
+      </div>
+      <!-- TABLA RÁPIDA DE MÁRGENES -->
+      <div class="card cp">
+        <div class="stitle">📋 Tabla de precios por margen</div>
+        <div style="margin-bottom:.75rem;"><label class="fl">Precio de coste base (€)</label><input id="tabla-coste" type="number" min="0" step=".01" placeholder="100" value="100" oninput="calcTabla()"/></div>
+        <div id="tabla-result"></div>
+      </div>
+    </div>
+  </div>`;
+  calcDirect();calcTabla();
+}
+
+function calcDirect(){
+  const coste=parseFloat(ge('calc-coste')?.value)||0;
+  const margen=parseFloat(ge('calc-margen')?.value)||30;
+  const el=ge('calc-result-direct');if(!el)return;
+  if(!coste){el.innerHTML=`<div style="font-size:.72rem;color:var(--t3);">Introduce el precio de coste</div>`;return;}
+  const pvp=coste/(1-margen/100);const benef=pvp-coste;
+  const col=margen>=30?'var(--green)':margen>=15?'var(--amber)':'var(--red)';
+  el.innerHTML=`
+    <div style="font-size:.7rem;color:var(--t3);margin-bottom:.375rem;">Precio de venta sugerido</div>
+    <div style="font-size:2.2rem;font-weight:800;font-family:var(--mono);color:var(--gold);line-height:1;">${fmt(pvp)}</div>
+    <div style="display:flex;justify-content:center;gap:1.5rem;margin-top:.75rem;">
+      <div><div style="font-size:.65rem;color:var(--t3);">Beneficio</div><div style="font-weight:700;color:var(--green);font-family:var(--mono);">${fmt(benef)}</div></div>
+      <div><div style="font-size:.65rem;color:var(--t3);">Margen</div><div style="font-weight:700;color:${col};font-family:var(--mono);">${margen}%</div></div>
+      <div><div style="font-size:.65rem;color:var(--t3);">Markup</div><div style="font-weight:700;color:var(--t2);font-family:var(--mono);">${((pvp/coste-1)*100).toFixed(1)}%</div></div>
+    </div>`;
+}
+
+function calcInverse(){
+  const coste=parseFloat(ge('inv-coste')?.value)||0;
+  const venta=parseFloat(ge('inv-venta')?.value)||0;
+  const el=ge('calc-result-inv');if(!el)return;
+  if(!coste||!venta||venta<=coste){el.innerHTML=`<div style="font-size:.72rem;color:var(--t3);">Introduce coste y venta (venta > coste)</div>`;return;}
+  const margen=((venta-coste)/venta*100);const benef=venta-coste;
+  const col=margen>=30?'var(--green)':margen>=15?'var(--amber)':'var(--red)';
+  el.innerHTML=`
+    <div style="font-size:1.8rem;font-weight:800;font-family:var(--mono);color:${col};">${margen.toFixed(1)}%</div>
+    <div style="font-size:.75rem;color:var(--t2);margin-top:.375rem;">Beneficio: <strong style="color:var(--green);">${fmt(benef)}</strong></div>
+    <div style="font-size:.7rem;color:var(--t3);margin-top:2px;">${margen>=30?'✅ Buen margen':margen>=15?'⚠️ Margen aceptable':'❌ Margen bajo'}</div>`;
+}
+
+function calcProvComp(){
+  const venta=parseFloat(ge('cmp-venta')?.value)||0;
+  const el=ge('cmp-result');if(!el)return;
+  const activos=proveedores.filter(p=>(p.estado||'activo')==='activo');
+  if(!venta){el.innerHTML=`<div style="font-size:.75rem;color:var(--t3);">Introduce el precio de venta.</div>`;return;}
+  const withMargen=activos.filter(p=>p.margen!=null).map(p=>{
+    const coste=venta*(1-p.margen/100);const benef=venta-coste;
+    return{...p,costeCalc:coste,benefCalc:benef};
+  }).sort((a,b)=>b.benefCalc-a.benefCalc);
+  if(!withMargen.length){el.innerHTML=`<div style="font-size:.75rem;color:var(--t3);">Sin proveedores con margen definido.</div>`;return;}
+  el.innerHTML=withMargen.map((p,i)=>`
+  <div style="display:flex;align-items:center;gap:8px;padding:.5rem 0;border-bottom:1px solid var(--b);cursor:pointer;" onclick="openFicha('${p.id}')">
+    <span style="font-size:.9rem;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':''}</span>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:.78rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.nombre)}</div>
+      <div style="font-size:.65rem;color:var(--t3);">Coste estimado: ${fmt(p.costeCalc)}</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-weight:700;font-family:var(--mono);color:${i===0?'var(--green)':'var(--t)'};">${fmt(p.benefCalc)}</div>
+      <div style="font-size:.65rem;color:var(--t3);">${p.margen}% margen</div>
+    </div>
+  </div>`).join('');
+}
+
+function calcTabla(){
+  const coste=parseFloat(ge('tabla-coste')?.value)||100;
+  const el=ge('tabla-result');if(!el)return;
+  const margenes=[10,15,20,25,30,35,40,45,50];
+  el.innerHTML=`<div class="card"><div class="tw"><table>
+    <thead><tr><th>Margen</th><th>Precio venta</th><th>Beneficio</th><th>Markup</th></tr></thead>
+    <tbody>${margenes.map(m=>{const pvp=coste/(1-m/100);const b=pvp-coste;return`<tr>
+      <td style="font-weight:700;color:${m>=30?'var(--green)':m>=15?'var(--amber)':'var(--red)'};">${m}%</td>
+      <td style="font-weight:600;font-family:var(--mono);">${fmt(pvp)}</td>
+      <td style="font-family:var(--mono);">${fmt(b)}</td>
+      <td style="font-family:var(--mono);color:var(--t2);">${((pvp/coste-1)*100).toFixed(1)}%</td>
+    </tr>`;}).join('')}</tbody>
+  </table></div></div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// OBJETIVOS Y SEGUIMIENTO
+// ══════════════════════════════════════════════════════
+let objetivos=JSON.parse(localStorage.getItem('macor_obj')||'[]');
+
+function rObjetivos(){
+  ge('tb-act').innerHTML=`<button class="btn bn-gold btn-sm" onclick="openObjetivoForm(null)">+ Nuevo objetivo</button>`;
+
+  // Calculate progress for each objective
+  const objs=objetivos.map(obj=>{
+    let current=null,target=obj.target,label='';
+    if(obj.tipo==='margen_medio'){
+      const vals=proveedores.filter(p=>p.margen!=null);
+      current=vals.length?vals.reduce((s,p)=>s+p.margen,0)/vals.length:0;
+      label=`Margen medio actual: ${current.toFixed(1)}%`;
+    } else if(obj.tipo==='fiabilidad_min'){
+      const bajos=proveedores.filter(p=>(p.estado||'activo')==='activo'&&(p.fiabilidad||0)<obj.target);
+      current=proveedores.filter(p=>(p.estado||'activo')==='activo').length-bajos.length;
+      target=proveedores.filter(p=>(p.estado||'activo')==='activo').length;
+      label=`${bajos.length} proveedores por debajo de ${obj.target}/10`;
+    } else if(obj.tipo==='gasto_mes'){
+      current=pedidos.filter(p=>isThisMonth(p.fecha)).reduce((s,p)=>s+(p.importe||0),0);
+      label=`Gasto este mes: ${fmt(current)}`;
+    } else if(obj.tipo==='pedidos_mes'){
+      current=pedidos.filter(p=>isThisMonth(p.fecha)).length;
+      label=`Pedidos este mes: ${current}`;
+    } else if(obj.tipo==='rappel_acum'){
+      current=pedidos.filter(p=>new Date(p.fecha||0).getFullYear()===new Date().getFullYear()).reduce((s,p)=>s+(p.importe||0),0);
+      label=`Gasto acumulado este año: ${fmt(current)}`;
+    } else if(obj.tipo==='score_medio'){
+      const act=proveedores.filter(p=>(p.estado||'activo')==='activo');
+      current=act.length?Math.round(act.map(p=>sc(p)).reduce((a,b)=>a+b,0)/act.length):0;
+      label=`Score medio actual: ${current}/100`;
+    }
+    const pct=target>0?Math.min(100,Math.round(current/target*100)):0;
+    const achieved=pct>=100;
+    return{...obj,current,target,pct,achieved,label};
+  });
+
+  const tipoLabels={margen_medio:'Margen medio de proveedores',fiabilidad_min:'Fiabilidad mínima',gasto_mes:'Gasto mensual objetivo',pedidos_mes:'Pedidos al mes',rappel_acum:'Gasto acumulado (rappel)',score_medio:'Score medio proveedores'};
+
+  ge('content').innerHTML=`
+  <div class="krow" style="grid-template-columns:repeat(3,1fr);margin-bottom:1rem;">
+    <div class="kpi"><div class="klbl">Objetivos activos</div><div class="kval">${objs.length}</div></div>
+    <div class="kpi"><div class="klbl">Conseguidos</div><div class="kval grn">${objs.filter(o=>o.achieved).length}</div></div>
+    <div class="kpi"><div class="klbl">En progreso</div><div class="kval amb">${objs.filter(o=>!o.achieved).length}</div></div>
+  </div>
+  ${objs.length===0?`<div class="empty"><div class="empty-i">🎯</div><div class="empty-t">Sin objetivos definidos</div><div class="empty-s">Define metas para hacer seguimiento de tu progreso.</div></div>`:''}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.875rem;">
+  ${objs.map((obj,i)=>`
+  <div class="card cp" style="${obj.achieved?'border-color:rgba(30,201,122,.35);':''}" >
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.75rem;">
+      <div>
+        <div style="font-weight:700;font-size:.88rem;">${esc(obj.nombre)}</div>
+        <div style="font-size:.67rem;color:var(--t3);margin-top:2px;">${tipoLabels[obj.tipo]||obj.tipo}</div>
+      </div>
+      <div style="display:flex;gap:3px;">
+        ${obj.achieved?`<span class="bdg bgrn">✓ Conseguido</span>`:''}
+        <button class="btn bn-red btn-xs" onclick="delObjetivo(${i})">✕</button>
+      </div>
+    </div>
+    <div style="margin-bottom:.5rem;">
+      <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:4px;">
+        <span style="color:var(--t2);">${esc(obj.label)}</span>
+        <span style="font-weight:700;font-family:var(--mono);color:${obj.achieved?'var(--green)':obj.pct>=60?'var(--amber)':'var(--red)'};">${obj.pct}%</span>
+      </div>
+      <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;border-radius:4px;background:${obj.achieved?'var(--green)':obj.pct>=60?'var(--amber)':'var(--red)'};width:${obj.pct}%;transition:width .5s;"></div>
+      </div>
+    </div>
+    <div style="font-size:.68rem;color:var(--t3);">
+      Objetivo: <strong style="color:var(--t);">${obj.tipo.includes('gasto')||obj.tipo.includes('rappel')?fmt(obj.target):obj.target} ${obj.tipo.includes('margen')||obj.tipo.includes('score')?'%':obj.tipo.includes('gasto')||obj.tipo.includes('rappel')?'':''}</strong>
+      ${obj.fechaLimite?` · Límite: ${fmtDate(obj.fechaLimite)}`:''}
+    </div>
+  </div>`).join('')}
+  </div>`;
+}
+
+function openObjetivoForm(idx){
+  const obj=idx!=null?objetivos[idx]:{};
+  showModal(`
+  <div class="mh"><h2>${idx!=null?'Editar objetivo':'Nuevo objetivo'}</h2><button class="xb" onclick="closeModal()">✕</button></div>
+  <div class="mb"><div class="fg">
+    <div class="full"><label class="fl">Nombre del objetivo *</label><input id="obj-n" value="${esc(obj.nombre||'')}" placeholder="Ej: Mejorar margen medio a 35%"/></div>
+    <div class="full"><label class="fl">Tipo de objetivo</label>
+      <select class="fsel" id="obj-tipo" onchange="updateObjetivoTarget()">
+        <option value="margen_medio" ${obj.tipo==='margen_medio'?'selected':''}>Margen medio de proveedores (%)</option>
+        <option value="score_medio" ${obj.tipo==='score_medio'?'selected':''}>Score medio de proveedores</option>
+        <option value="fiabilidad_min" ${obj.tipo==='fiabilidad_min'?'selected':''}>Fiabilidad mínima de todos los proveedores</option>
+        <option value="gasto_mes" ${obj.tipo==='gasto_mes'?'selected':''}>Gasto mensual máximo (€)</option>
+        <option value="pedidos_mes" ${obj.tipo==='pedidos_mes'?'selected':''}>Número de pedidos al mes</option>
+        <option value="rappel_acum" ${obj.tipo==='rappel_acum'?'selected':''}>Gasto acumulado anual para rappel (€)</option>
+      </select>
+    </div>
+    <div><label class="fl" id="obj-target-lbl">Valor objetivo</label><input id="obj-target" type="number" min="0" step=".1" value="${obj.target??''}"/></div>
+    <div><label class="fl">Fecha límite (opcional)</label><input id="obj-fecha" type="date" value="${obj.fechaLimite||''}"/></div>
+  </div></div>
+  <div class="mf"><button class="btn bn-ghost" onclick="closeModal()">Cancelar</button><button class="btn bn-gold" onclick="saveObjetivo(${idx!=null?idx:'null'})">Guardar objetivo</button></div>`,'sm');
+  setTimeout(updateObjetivoTarget,50);
+}
+
+function updateObjetivoTarget(){
+  const tipo=gv('obj-tipo');
+  const labels={margen_medio:'Margen objetivo (%)',score_medio:'Score objetivo (0-100)',fiabilidad_min:'Fiabilidad mínima (1-10)',gasto_mes:'Gasto máximo mensual (€)',pedidos_mes:'Pedidos al mes',rappel_acum:'Gasto anual objetivo para rappel (€)'};
+  const el=ge('obj-target-lbl');if(el)el.textContent=labels[tipo]||'Valor objetivo';
+}
+
+function saveObjetivo(idx){
+  const n=ge('obj-n')?.value.trim();if(!n){toast('Nombre obligatorio','err');return;}
+  const obj={nombre:n,tipo:gv('obj-tipo'),target:num('obj-target'),fechaLimite:gv('obj-fecha')};
+  if(idx!=null&&idx!=='null')objetivos[parseInt(idx)]=obj;else objetivos.push(obj);
+  localStorage.setItem('macor_obj',JSON.stringify(objetivos));
+  closeModal();toast('Objetivo guardado ✓','ok');rObjetivos();
+}
+
+function delObjetivo(idx){
+  if(!confirm('¿Eliminar este objetivo?'))return;
+  objetivos.splice(idx,1);
+  localStorage.setItem('macor_obj',JSON.stringify(objetivos));
+  toast('Objetivo eliminado');rObjetivos();
+}
+
+// ══════════════════════════════════════════════════════
+// BUSCADOR DE PROVEEDOR IDEAL
+// ══════════════════════════════════════════════════════
+function rBuscador(){
+  ge('tb-act').innerHTML='';
+  const artCats=[...new Set([...proveedores.map(p=>p.categoria),...productos.map(p=>p.categoria)].filter(Boolean))].sort();
+  const maxEnt=Math.max(...proveedores.filter(p=>p.entrega!=null).map(p=>p.entrega),14);
+
+  ge('content').innerHTML=`
+  <div class="card cp" style="margin-bottom:1rem;">
+    <div style="font-size:1rem;font-weight:700;margin-bottom:.375rem;">🔍 Encuentra el proveedor ideal para un pedido concreto</div>
+    <div style="font-size:.78rem;color:var(--t2);margin-bottom:1.25rem;">Dime qué necesitas y te digo exactamente a quién pedir y por qué.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:1rem;">
+      <div><label class="fl">¿Qué categoría / producto?</label>
+        <select class="fsel" id="bus-cat">
+          <option value="">Cualquier categoría</option>
+          ${artCats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><label class="fl" style="margin:0;">Entrega máxima</label><span id="bus-ent-v" style="font-size:.72rem;font-weight:700;color:var(--gold);font-family:var(--mono);">cualquiera</span></div>
+        <input type="range" id="bus-ent" min="1" max="${maxEnt||14}" step="1" value="${maxEnt||14}" style="width:100%;"
+          oninput="const v=+this.value;ge('bus-ent-v').textContent=v>=${maxEnt||14}?'cualquiera':v+'d';"/>
+      </div>
+      <div><label class="fl">Importe del pedido (€)</label>
+        <input id="bus-imp" type="number" min="0" step="50" placeholder="Sin límite de mínimo"/>
+      </div>
+      <div><label class="fl">¿Qué priorizas hoy?</label>
+        <select class="fsel" id="bus-prio">
+          <option value="score">Mejor puntuación global</option>
+          <option value="margen">Mayor margen</option>
+          <option value="entrega">Entrega más rápida</option>
+          <option value="fiabilidad">Más fiable</option>
+          <option value="calidad">Mejor calidad</option>
+          <option value="precio">Precio más bajo en catálogo</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn bn-gold" style="width:100%;justify-content:center;height:40px;font-size:.88rem;" onclick="runBuscador()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Encontrar el mejor proveedor
+    </button>
+  </div>
+  <div id="bus-result"></div>`;
+}
+
+function runBuscador(){
+  const cat=gv('bus-cat');
+  const maxE=parseInt(ge('bus-ent')?.value)||999;
+  const maxEFull=parseInt(ge('bus-ent')?.max)||14;
+  const imp=parseFloat(ge('bus-imp')?.value)||0;
+  const prio=gv('bus-prio');
+
+  let list=proveedores.filter(p=>(p.estado||'activo')==='activo');
+  if(cat)list=list.filter(p=>p.categoria===cat);
+  if(maxE<maxEFull)list=list.filter(p=>p.entrega==null||p.entrega<=maxE);
+  if(imp>0)list=list.filter(p=>p.pedidoMin==null||p.pedidoMin<=imp);
+
+  const sortMap={
+    score:(a,b)=>sc(b)-sc(a),
+    margen:(a,b)=>(b.margen||0)-(a.margen||0),
+    entrega:(a,b)=>(a.entrega||99)-(b.entrega||99),
+    fiabilidad:(a,b)=>(b.fiabilidad||0)-(a.fiabilidad||0),
+    calidad:(a,b)=>(b.calidad||0)-(a.calidad||0),
+    precio:(a,b)=>{
+      const pa=productos.filter(x=>x.proveedorId===a.id&&(!cat||x.categoria===cat)).reduce((mn,p)=>p.precio!=null?Math.min(mn,p.precio):mn,99999);
+      const pb=productos.filter(x=>x.proveedorId===b.id&&(!cat||x.categoria===cat)).reduce((mn,p)=>p.precio!=null?Math.min(mn,p.precio):mn,99999);
+      return pa-pb;
+    },
+  };
+  list.sort(sortMap[prio]||sortMap.score);
+
+  const el=ge('bus-result');
+  if(!list.length){
+    el.innerHTML=`<div class="empty"><div class="empty-i">😕</div><div class="empty-t">Ningún proveedor cumple todos los filtros</div><div class="empty-s">Prueba a ampliar los criterios de búsqueda.</div></div>`;
+    return;
+  }
+
+  const prioLabels={score:'mejor puntuación',margen:'mayor margen',entrega:'entrega más rápida',fiabilidad:'más fiable',calidad:'mejor calidad',precio:'precio más bajo'};
+
+  el.innerHTML=`
+  <div style="font-size:.72rem;color:var(--t3);margin-bottom:.875rem;font-weight:600;">${list.length} proveedor${list.length!==1?'es':''} encontrado${list.length!==1?'s':''} · Ordenados por ${prioLabels[prio]||'score'}</div>
+  <div style="display:flex;flex-direction:column;gap:.5rem;">
+  ${list.map((p,i)=>{
+    const s=sc(p);
+    const provProds=productos.filter(x=>x.proveedorId===p.id&&(!cat||x.categoria===cat));
+    const minPrecio=provProds.length?Math.min(...provProds.filter(x=>x.precio!=null).map(x=>x.precio)):null;
+    return `<div class="card" style="padding:1rem;display:flex;align-items:center;gap:1rem;cursor:pointer;${i===0?'border-color:rgba(232,160,32,.35);background:rgba(232,160,32,.03);':''}" onclick="openFicha('${p.id}')">
+      <div style="font-size:1.3rem;width:32px;text-align:center;flex-shrink:0;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'  '}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+          <span style="font-weight:700;font-size:.88rem;">${esc(p.nombre)}</span>
+          ${i===0?`<span style="font-size:.65rem;background:var(--gold);color:var(--bg);padding:1px 6px;border-radius:3px;font-weight:700;">RECOMENDADO</span>`:''}
+        </div>
+        <div style="font-size:.7rem;color:var(--t3);display:flex;gap:10px;flex-wrap:wrap;">
+          ${p.entrega!=null?`⏱ ${p.entrega}d`:''}
+          ${p.margen!=null?`📈 ${p.margen}% margen`:''}
+          ${p.fiabilidad!=null?`⭐ ${p.fiabilidad}/10`:''}
+          ${p.pago?`💳 ${p.pago}`:''}
+          ${minPrecio!=null?`💰 Desde ${fmt(minPrecio)}`:''}
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:1.6rem;font-weight:900;font-family:var(--mono);color:${scC(s)};">${s}</div>
+        <div style="font-size:.62rem;color:var(--t3);">score</div>
+      </div>
+      <div onclick="event.stopPropagation()">
+        ${p.telefono?`<a href="tel:${p.telefono}" class="btn bn-teal btn-xs" title="Llamar">📞</a>`:''}
+        <button class="btn bn-gold btn-xs" onclick="event.stopPropagation();pedidoDesdeArticulo('','')" style="margin-left:3px;">🛒 Pedir</button>
+      </div>
+    </div>`;
+  }).join('')}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// HISTORIAL DE CONTACTO (integrado en ficha proveedor)
+// Añadimos pestaña "Contactos" a la ficha
+// ══════════════════════════════════════════════════════
+function openContactoForm(provId){
+  showModal(`
+  <div class="mh"><h2>📞 Registrar contacto</h2><button class="xb" onclick="closeModal()">✕</button></div>
+  <div class="mb"><div class="fg">
+    <div><label class="fl">Fecha *</label><input id="con-fecha" type="date" value="${today()}"/></div>
+    <div><label class="fl">Tipo</label>
+      <select class="fsel" id="con-tipo">
+        <option value="llamada">📞 Llamada</option>
+        <option value="visita">🤝 Visita</option>
+        <option value="email">✉️ Email</option>
+        <option value="whatsapp">💬 WhatsApp</option>
+        <option value="reunion">👥 Reunión</option>
+      </select>
+    </div>
+    <div class="full"><label class="fl">¿De qué se habló? *</label><textarea id="con-tema" style="height:80px;" placeholder="Ej: Negociación rappel 2025, propuso subir a 4% si compramos 8.000€ anuales…"></textarea></div>
+    <div class="full"><label class="fl">Próximo paso / Pendiente</label><input id="con-next" placeholder="Ej: Confirmar por email antes del viernes"/></div>
+  </div></div>
+  <div class="mf"><button class="btn bn-ghost" onclick="closeModal()">Cancelar</button><button class="btn bn-gold" onclick="saveContacto('${provId}')">Registrar</button></div>`,'sm');
+}
+
+async function saveContacto(provId){
+  const tema=ge('con-tema')?.value.trim();if(!tema){toast('Escribe el tema','err');return;}
+  const p=proveedores.find(x=>x.id===provId);if(!p)return;
+  const c={tipo:gv('con-tipo'),fecha:gv('con-fecha'),tema,siguiente:gv('con-next')};
+  const contactos=[...(p.contactos||[]),c];
+  await saveDoc('proveedores',provId,{contactos,updatedAt:new Date().toISOString()});
+  closeModal();toast('Contacto registrado ✓','ok');
+  setTimeout(()=>openFicha(provId),100);
+}
+
+// ══════════════════════════════════════════════════════
+// MODO PRESENTACIÓN
+// ══════════════════════════════════════════════════════
+let presentMode=false;
+function togglePresentation(){
+  presentMode=!presentMode;
+  const btn=ge('btn-present');
+  if(presentMode){
+    btn.textContent='👁 Salir de presentación';btn.className='btn bn-gold btn-sm';
+    document.body.classList.add('present-mode');
+    toast('Modo presentación activado — datos sensibles ocultos');
+  } else {
+    btn.textContent='👁 Presentar';btn.className='btn bn-ghost btn-sm';
+    document.body.classList.remove('present-mode');
+    toast('Modo presentación desactivado');
+  }
+  render();
+}
+
+// ══════════════════════════════════════════════════════
+// SOBREESCRIBIR rProveedores para mostrar btn-present
+// y añadir modo presentación
+// ══════════════════════════════════════════════════════
+const _origGoTo=goTo;
+function goTo(v){
+  _origGoTo(v);
+  const btn=ge('btn-present');
+  if(btn)btn.style.display=['proveedores','ranking','estadisticas','comparar'].includes(v)?'':'none';
+}
+
+// ══════════════════════════════════════════════════════
+// PATCH fichaTab para añadir pestaña Contactos
+// ══════════════════════════════════════════════════════
+const _origFichaTab=fichaTab;
+function fichaTab(tab,id){
+  // If not 'contactos', delegate to original
+  if(tab!=='contactos'){_origFichaTab(tab,id);return;}
+  document.querySelectorAll('[id^="ft-"]').forEach(el=>el.classList.toggle('on',el.id==='ft-contactos'));
+  const p=proveedores.find(x=>x.id===id);if(!p)return;
+  const contactos=[...(p.contactos||[])].sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0));
+  const el=ge('ficha-body');
+  const tipoIcon={llamada:'📞',visita:'🤝',email:'✉️',whatsapp:'💬',reunion:'👥'};
+  el.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:.625rem;">
+    <button class="btn bn-gold btn-sm" onclick="openContactoForm('${id}')">+ Registrar contacto</button>
+  </div>
+  ${contactos.length===0?`<div class="empty" style="padding:1.5rem;"><div class="empty-i">📞</div><div class="empty-t">Sin contactos registrados</div><div class="empty-s">Registra cada llamada, visita o email para no perder el hilo.</div></div>`:''}
+  <div style="position:relative;padding-left:1.5rem;">
+    <div style="position:absolute;left:.5rem;top:0;bottom:0;width:1px;background:var(--b);"></div>
+    ${contactos.map(c=>`<div style="position:relative;margin-bottom:1rem;">
+      <div style="position:absolute;left:-1.25rem;top:3px;width:16px;height:16px;border-radius:50%;background:var(--s3);border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:9px;">${tipoIcon[c.tipo]||'📌'}</div>
+      <div style="background:var(--bg3);border-radius:var(--r2);padding:.75rem;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:.375rem;">
+          <span style="font-size:.68rem;font-family:var(--mono);color:var(--t3);">${fmtDate(c.fecha)}</span>
+          <span class="bdg bsrf" style="font-size:.6rem;">${c.tipo||'contacto'}</span>
+        </div>
+        <div style="font-size:.78rem;color:var(--t);line-height:1.6;">${esc(c.tema)}</div>
+        ${c.siguiente?`<div style="margin-top:.375rem;font-size:.7rem;color:var(--gold);">→ Pendiente: ${esc(c.siguiente)}</div>`:''}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// Patch openFicha para añadir pestaña Contactos
+const _origOpenFicha=openFicha;
+function openFicha(id){
+  _origOpenFicha(id);
+  // Add contactos tab after modal renders
+  setTimeout(()=>{
+    const p=proveedores.find(x=>x.id===id);if(!p)return;
+    const tabsEl=document.querySelector('.tabs');
+    if(tabsEl&&!ge('ft-contactos')){
+      const div=document.createElement('div');
+      div.className='tab';div.id='ft-contactos';
+      div.textContent=`Contactos (${(p.contactos||[]).length})`;
+      div.onclick=()=>fichaTab('contactos',id);
+      tabsEl.appendChild(div);
+    }
+  },50);
 }
 
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
