@@ -305,6 +305,32 @@ body.present-mode .kval.amb,
 body.present-mode .kval.gld { color: var(--t2) !important; filter: none; }
 body.present-mode td:has([style*="font-family:var(--mono)"]) { filter: blur(4px); }
 
+
+/* ── ONBOARDING ── */
+.ob-overlay{position:fixed;inset:0;background:rgba(5,8,16,.97);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(10px);}
+.ob-box{background:var(--s);border:1px solid var(--b2);border-radius:20px;width:100%;max-width:600px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.8);}
+.ob-progress{height:3px;background:var(--bg3);}
+.ob-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .4s var(--ease);}
+.ob-header{padding:2rem 2rem 1rem;text-align:center;}
+.ob-step-num{width:40px;height:40px;border-radius:50%;background:var(--gold);color:var(--bg);font-weight:800;font-size:1rem;display:flex;align-items:center;justify-content:center;margin:0 auto .875rem;font-family:var(--mono);}
+.ob-title{font-size:1.25rem;font-weight:800;letter-spacing:-.4px;margin-bottom:.5rem;}
+.ob-sub{font-size:.85rem;color:var(--t2);line-height:1.6;}
+.ob-body{padding:1.25rem 2rem 2rem;}
+.ob-footer{padding:1.25rem 2rem;border-top:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;}
+.ob-skip{font-size:.75rem;color:var(--t3);cursor:pointer;text-decoration:none;}
+.ob-skip:hover{color:var(--t2);}
+.ob-dots{display:flex;gap:6px;}
+.ob-dot{width:6px;height:6px;border-radius:50%;background:var(--b2);transition:all .2s;}
+.ob-dot.active{background:var(--gold);width:18px;}
+.ob-feature{display:flex;align-items:flex-start;gap:12px;padding:.75rem;background:var(--bg3);border-radius:var(--r2);margin-bottom:.5rem;border:1px solid var(--b);}
+.ob-feature-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.ob-checklist{display:flex;flex-direction:column;gap:.5rem;}
+.ob-check{display:flex;align-items:center;gap:10px;padding:.625rem .875rem;background:var(--bg3);border-radius:var(--r2);border:1px solid var(--b);cursor:pointer;transition:all .15s;}
+.ob-check:hover{border-color:var(--gold);background:var(--g4);}
+.ob-check.done{border-color:rgba(30,201,122,.35);background:var(--gn2);}
+.ob-check-icon{width:22px;height:22px;border-radius:50%;border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;transition:all .15s;}
+.ob-check.done .ob-check-icon{background:var(--green);border-color:var(--green);color:#fff;}
+
 </style>
 </head>
 <body>
@@ -412,6 +438,7 @@ body.present-mode td:has([style*="font-family:var(--mono)"]) { filter: blur(4px)
     </div>
     <div class="sb-bot">
       <div class="sync-row"><div class="sdot" id="sdot"></div><span id="stxt" style="flex:1;">…</span></div>
+      <div style="margin-top:.5rem;"><button class="btn bn-ghost btn-xs" style="width:100%;justify-content:center;font-size:.65rem;" onclick="resetOnboarding()">Ver introducción</button></div>
     </div>
   </aside>
 
@@ -450,6 +477,20 @@ body.present-mode td:has([style*="font-family:var(--mono)"]) { filter: blur(4px)
   <button class="fab-main" id="fab-btn" onclick="toggleFab()">+</button>
 </div>
 
+
+<!-- ONBOARDING -->
+<div id="ob-overlay" class="ob-overlay" style="display:none;">
+  <div class="ob-box">
+    <div class="ob-progress"><div class="ob-progress-fill" id="ob-prog" style="width:0%"></div></div>
+    <div id="ob-content"></div>
+    <div class="ob-footer">
+      <a class="ob-skip" onclick="skipOnboarding()">Saltar introducción →</a>
+      <div class="ob-dots" id="ob-dots"></div>
+      <button class="btn bn-gold" id="ob-next" onclick="obNext()">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
 <div class="ovl" id="ovl"><div class="modal" id="mbox"></div></div>
 <div class="toast" id="toast"></div>
 <script>
@@ -468,6 +509,8 @@ const daysDiff=d=>{if(!d)return 999;return Math.round((new Date()-new Date(d))/8
 // ══════════ STATE ══════════
 let db=null,demoMode=false,aiKey='',offlineQ=[];
 let presupuestos=[],clientes_v=[];
+let obStep=0;
+const OB_STEPS=5;
 let chatMemory=JSON.parse(localStorage.getItem('macor_chat_mem')||'[]');
 let proveedores=[],pedidos=[],productos=[],diario=[];
 let CV='dashboard',sortF='nombre',sortD=1,vmG=true,cmpIds=new Set();
@@ -486,6 +529,7 @@ function saveConfig(){
 }
 function useDemo(){
   demoMode=true;proveedores=dProv();pedidos=dPed();productos=dProd();diario=dDiary();presupuestos=dPres();clientes_v=dClientes();
+  localStorage.setItem('macor_ob_done','1');
   launch('demo');
 }
 function initFB(cfg){
@@ -504,7 +548,9 @@ function initFB(cfg){
 function launch(s){
   aiKey=localStorage.getItem('macor_ai')||'';
   ge('cfg-wrap').style.display='none';ge('app').style.display='flex';ge('fab').style.display='flex';
-  setSy(s);setupOffline();goTo('dashboard');
+  setSy(s);setupOffline();
+  const obDone=localStorage.getItem('macor_ob_done');
+  if(!obDone){showOnboarding();}else{goTo('dashboard');}
 }
 function setSy(s){
   const d=ge('sdot'),t=ge('stxt');d.className='sdot '+s;
@@ -690,55 +736,148 @@ function fabAction(type){
 function openPedRapido(){
   showModal(`
   <div class="mh"><h2>⚡ Pedido rápido</h2><button class="xb" onclick="closeModal()">✕</button></div>
-  <div class="mb" style="padding:1.25rem;">
-    <div style="display:flex;flex-direction:column;gap:.875rem;">
+  <div class="mb">
+    <div class="fg" style="margin-bottom:.875rem;">
       <div><label class="fl">Proveedor *</label>
-        <select class="fsel" id="pr-prov">
+        <select class="fsel" id="pr-prov" onchange="onPedProvChange()">
           <option value="">— Seleccionar proveedor —</option>
           ${proveedores.filter(p=>(p.estado||'activo')==='activo').map(p=>`<option value="${p.id}">${esc(p.nombre)}</option>`).join('')}
         </select>
       </div>
-      <div><label class="fl">Producto / Descripción</label><input id="pr-desc" placeholder="Ej: Tornillería M6 1000ud" autofocus/></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
-        <div><label class="fl">Importe (€) *</label><input id="pr-imp" type="number" min="0" step=".01" placeholder="0.00"/></div>
-        <div><label class="fl">Fecha</label><input id="pr-fecha" type="date" value="${today()}"/></div>
-      </div>
-      <!-- VALORACION POST-PEDIDO -->
-      <div style="background:var(--bg3);border-radius:var(--r2);padding:.875rem;">
-        <div style="font-size:.65rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.625rem;">Valoración del pedido anterior (opcional)</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem;">
-          <div><label class="fl">¿Llegó a tiempo?</label>
-            <select class="fsel" id="pr-tiempo">
-              <option value="">— No valorar —</option>
-              <option value="si">Sí, puntual</option>
-              <option value="tarde_poco">Tarde (1-2 días)</option>
-              <option value="tarde_mucho">Tarde (3+ días)</option>
-            </select>
-          </div>
-          <div><label class="fl">¿Producto correcto?</label>
-            <select class="fsel" id="pr-calidad">
-              <option value="">— No valorar —</option>
-              <option value="perfecto">Perfecto</option>
-              <option value="aceptable">Aceptable</option>
-              <option value="defectuoso">Defectuoso/Incorrecto</option>
-            </select>
-          </div>
+      <div><label class="fl">Fecha</label><input id="pr-fecha" type="date" value="${today()}"/></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+      <div style="font-size:.68rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;">Artículos del pedido</div>
+      <button class="btn bn-surf btn-xs" onclick="addLineaPed()">+ Línea</button>
+    </div>
+    <div id="ped-lineas" style="display:flex;flex-direction:column;gap:.45rem;margin-bottom:.875rem;"></div>
+    <div id="ped-total" style="background:var(--bg3);border-radius:var(--r2);padding:.75rem;text-align:right;margin-bottom:.875rem;"></div>
+    <div style="background:var(--bg3);border:1px solid var(--b);border-radius:var(--r2);padding:.875rem;margin-bottom:.625rem;">
+      <div style="font-size:.65rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.5rem;">Valoración (opcional)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+        <div><label class="fl">¿Llegó a tiempo?</label>
+          <select class="fsel" id="pr-tiempo">
+            <option value="">— No valorar —</option>
+            <option value="si">✅ Sí, puntual</option>
+            <option value="tarde_poco">⚠️ Tarde 1-2d</option>
+            <option value="tarde_mucho">❌ Tarde 3+d</option>
+          </select>
+        </div>
+        <div><label class="fl">¿Producto correcto?</label>
+          <select class="fsel" id="pr-calidad">
+            <option value="">— No valorar —</option>
+            <option value="perfecto">✅ Perfecto</option>
+            <option value="aceptable">⚠️ Aceptable</option>
+            <option value="defectuoso">❌ Defectuoso</option>
+          </select>
         </div>
       </div>
     </div>
+    <div><label class="fl">Notas</label><input id="pr-notas" placeholder="Nº albarán, observaciones…"/></div>
   </div>
-  <div class="mf"><button class="btn bn-ghost" onclick="closeModal()">Cancelar</button><button class="btn bn-gold" onclick="savePedRapido()">Guardar pedido →</button></div>`,'sm');
+  <div class="mf"><button class="btn bn-ghost" onclick="closeModal()">Cancelar</button><button class="btn bn-gold" onclick="savePedRapido()">Guardar pedido →</button></div>`);
+  window._pedLineas=[{artNombre:'',artRef:'',precio:'',cantidad:1,descuento:0,unidad:'ud'}];
+  renderLineasPed();
+}
+function onPedProvChange(){
+  const provId=ge('pr-prov')?.value;
+  (window._pedLineas||[]).forEach((_,i)=>{
+    const artNombre=ge(`pedl-art-${i}`)?.value;
+    if(!artNombre||!provId)return;
+    const art=productos.find(p=>p.proveedorId===provId&&p.nombre.toLowerCase()===artNombre.toLowerCase());
+    if(art){
+      const prEl=ge(`pedl-precio-${i}`);if(prEl&&art.precio!=null)prEl.value=art.precio;
+      const uEl=ge(`pedl-uni-${i}`);if(uEl&&art.unidad)uEl.value=art.unidad;
+      calcLineaPed(i);
+    }
+  });
+}
+function renderLineasPed(){
+  const wrap=ge('ped-lineas');if(!wrap)return;
+  const provId=ge('pr-prov')?.value||'';
+  const artNames=[...new Set(productos.map(p=>p.nombre))];
+  wrap.innerHTML=(window._pedLineas||[]).map((l,i)=>`
+  <div style="background:var(--bg3);border:1px solid var(--b);border-radius:var(--r2);padding:.625rem;">
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:.375rem;margin-bottom:.375rem;">
+      <div><label class="fl">Artículo</label>
+        <input id="pedl-art-${i}" value="${esc(l.artNombre||'')}" list="pedl-al-${i}" placeholder="Escribe o busca…" oninput="onPedArtChange(${i})"/>
+        <datalist id="pedl-al-${i}">${artNames.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+      </div>
+      <div><label class="fl">Referencia</label><input id="pedl-ref-${i}" value="${esc(l.artRef||'')}"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:.375rem;align-items:flex-end;">
+      <div><label class="fl">Precio €</label><input id="pedl-precio-${i}" type="number" min="0" step=".0001" value="${l.precio||''}" oninput="calcLineaPed(${i})"/></div>
+      <div><label class="fl">Cantidad</label><input id="pedl-qty-${i}" type="number" min=".001" step=".001" value="${l.cantidad||1}" oninput="calcLineaPed(${i})"/></div>
+      <div><label class="fl">Dto %</label><input id="pedl-dto-${i}" type="number" min="0" max="100" step=".1" value="${l.descuento||0}" oninput="calcLineaPed(${i})"/></div>
+      <div><label class="fl">Unidad</label><input id="pedl-uni-${i}" value="${esc(l.unidad||'ud')}"/></div>
+      <button class="btn bn-red btn-xs" onclick="removePedLinea(${i})" style="margin-top:16px;" title="Quitar">✕</button>
+    </div>
+    <div id="pedl-sub-${i}" style="font-size:.68rem;color:var(--t3);margin-top:.2rem;text-align:right;min-height:14px;"></div>
+  </div>`).join('');
+  (window._pedLineas||[]).forEach((_,i)=>calcLineaPed(i));
+  calcTotalPed();
+}
+function onPedArtChange(i){
+  const nombre=ge(`pedl-art-${i}`)?.value;if(!nombre)return;
+  const provId=ge('pr-prov')?.value;
+  let art=provId?productos.find(p=>p.proveedorId===provId&&p.nombre.toLowerCase()===nombre.toLowerCase()):null;
+  if(!art)art=productos.find(p=>p.nombre.toLowerCase()===nombre.toLowerCase());
+  if(art){
+    const r=ge(`pedl-ref-${i}`);if(r&&art.referencia)r.value=art.referencia;
+    const pr=ge(`pedl-precio-${i}`);if(pr&&art.precio!=null)pr.value=art.precio;
+    const u=ge(`pedl-uni-${i}`);if(u&&art.unidad)u.value=art.unidad;
+    const pv=ge('pr-prov');if(pv&&!pv.value&&art.proveedorId)pv.value=art.proveedorId;
+  }
+  calcLineaPed(i);
+}
+function calcLineaPed(i){
+  const p=parseFloat(ge(`pedl-precio-${i}`)?.value)||0;
+  const q=parseFloat(ge(`pedl-qty-${i}`)?.value)||1;
+  const d=parseFloat(ge(`pedl-dto-${i}`)?.value)||0;
+  const sub=p*q*(1-d/100);
+  const el=ge(`pedl-sub-${i}`);
+  if(el)el.innerHTML=p>0?`${fmt(p)} × ${q}${d>0?` −${d}%`:''} = <strong style="color:var(--gold);">${fmt(sub)}</strong>`:'';
+  calcTotalPed();
+}
+function calcTotalPed(){
+  let total=0;
+  (window._pedLineas||[]).forEach((_,i)=>{
+    const p=parseFloat(ge(`pedl-precio-${i}`)?.value)||0;
+    const q=parseFloat(ge(`pedl-qty-${i}`)?.value)||1;
+    const d=parseFloat(ge(`pedl-dto-${i}`)?.value)||0;
+    total+=p*q*(1-d/100);
+  });
+  const el=ge('ped-total');
+  if(el)el.innerHTML=total>0?`<span style="color:var(--t3);font-size:.75rem;">Total: </span><strong style="font-size:1.1rem;font-family:var(--mono);color:var(--gold);">${fmt(total)}</strong>`:'';
+}
+function addLineaPed(){
+  (window._pedLineas=window._pedLineas||[]).push({artNombre:'',artRef:'',precio:'',cantidad:1,descuento:0,unidad:'ud'});
+  renderLineasPed();
+  setTimeout(()=>ge(`pedl-art-${window._pedLineas.length-1}`)?.focus(),50);
+}
+function removePedLinea(i){
+  if((window._pedLineas||[]).length<=1){toast('Debe haber al menos una línea','err');return;}
+  window._pedLineas.splice(i,1);renderLineasPed();
 }
 async function savePedRapido(){
   const provId=gv('pr-prov');if(!provId){toast('Selecciona un proveedor','err');return;}
-  const imp=num('pr-imp');if(!imp){toast('Introduce el importe','err');return;}
-  const data={proveedorId:provId,producto:gv('pr-desc'),importe:imp,fecha:gv('pr-fecha'),updatedAt:new Date().toISOString()};
+  const lineas=(window._pedLineas||[]).map((_,i)=>({
+    artNombre:ge(`pedl-art-${i}`)?.value.trim()||'',
+    artRef:ge(`pedl-ref-${i}`)?.value.trim()||'',
+    precio:parseFloat(ge(`pedl-precio-${i}`)?.value)||0,
+    cantidad:parseFloat(ge(`pedl-qty-${i}`)?.value)||1,
+    descuento:parseFloat(ge(`pedl-dto-${i}`)?.value)||0,
+    unidad:ge(`pedl-uni-${i}`)?.value.trim()||'ud',
+  })).filter(l=>l.artNombre||l.precio>0);
+  if(!lineas.length){toast('Añade al menos un artículo','err');return;}
+  const total=lineas.reduce((s,l)=>s+l.precio*l.cantidad*(1-l.descuento/100),0);
+  const desc=lineas.map(l=>`${l.artNombre||'Art.'}×${l.cantidad}`).join(', ');
+  const data={proveedorId:provId,fecha:gv('pr-fecha'),producto:desc,lineas,importe:Math.round(total*100)/100,notas:gv('pr-notas'),valorTiempo:gv('pr-tiempo'),valorCalidad:gv('pr-calidad'),updatedAt:new Date().toISOString()};
   await saveDoc('pedidos','',data);
-  // Valoración post-pedido
-  const tiempo=gv('pr-tiempo');const cal=gv('pr-calidad');
+  const tiempo=gv('pr-tiempo'),cal=gv('pr-calidad');
   if(tiempo||cal){
     const p=proveedores.find(x=>x.id===provId);if(p){
-      let fi=p.fiabilidad||8;let ca=p.calidad||8;
+      let fi=p.fiabilidad||8,ca=p.calidad||8;
       if(tiempo==='si')fi=Math.min(10,parseFloat((fi+.2).toFixed(1)));
       else if(tiempo==='tarde_poco')fi=Math.max(1,parseFloat((fi-.5).toFixed(1)));
       else if(tiempo==='tarde_mucho')fi=Math.max(1,parseFloat((fi-1.5).toFixed(1)));
@@ -747,10 +886,10 @@ async function savePedRapido(){
       await saveDoc('proveedores',provId,{fiabilidad:fi,calidad:ca,updatedAt:new Date().toISOString()});
     }
   }
-  closeModal();toast('Pedido guardado ✓','ok');
+  closeModal();toast(`Pedido guardado — ${fmt(total)} ✓`,'ok');
 }
 
-// ══════════ INC PICKER ══════════
+
 function openIncPicker(){
   showModal(`
   <div class="mh"><h2>Registrar incidencia</h2><button class="xb" onclick="closeModal()">✕</button></div>
@@ -1919,9 +2058,13 @@ async function delArt(id){if(!confirm('¿Eliminar este artículo?'))return;await
 function pedidoDesdeArticulo(nombre,referencia){
   openPedRapido();
   setTimeout(()=>{
-    const el=ge('pr-desc');
-    if(el)el.value=nombre+(referencia?' ('+referencia+')':'');
-  },60);
+    if(window._pedLineas&&window._pedLineas.length>0){
+      window._pedLineas[0].artNombre=nombre;
+      window._pedLineas[0].artRef=referencia||'';
+      renderLineasPed();
+      setTimeout(()=>onPedArtChange(0),60);
+    }
+  },100);
 }
 
 // ══════════════════════════════════════════════════════
@@ -3105,6 +3248,204 @@ function dPres(){
     {id:'pres3',titulo:'Pintura exterior naves industriales',clienteId:'cv1',numero:'PRE-2024-003',fecha:h(20),validezDias:30,estado:'rechazado',descuento:0,iva:21,lineas:[{nombre:'Pintura plástica blanca 20L',referencia:'PPB-20',proveedorId:'p3',coste:36.50,pvp:58,cantidad:30,unidad:'cubo'}],total:2104.2,notas:'Cliente eligió otro proveedor por precio.'},
     {id:'pres4',titulo:'Fontanería comunidad vecinos',clienteId:'cv2',numero:'PRE-2024-004',fecha:h(1),validezDias:30,estado:'borrador',descuento:3,iva:21,lineas:[{nombre:'Silicona neutra 310ml',referencia:'SN-310',proveedorId:'p9',coste:4.20,pvp:7,cantidad:50,unidad:'ud'}],total:412.6,notas:'Pendiente confirmar cantidad exacta.'},
   ];
+}
+
+// ══════════════════════════════════════════════════════════════
+// ONBOARDING
+// ══════════════════════════════════════════════════════════════
+const OB_CONTENT = [
+  // Step 0 — Bienvenida
+  {
+    num:'👋',
+    title:'Bienvenido a Macor Pro',
+    sub:'Tu suite comercial completa. En 3 minutos tendrás todo configurado y listo para usar.',
+    render:()=>`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem;">
+      <div class="ob-feature"><div class="ob-feature-icon" style="background:var(--g3);">🏭</div><div><div style="font-weight:600;font-size:.82rem;margin-bottom:2px;">Proveedores</div><div style="font-size:.72rem;color:var(--t2);">Fichas completas con scoring automático</div></div></div>
+      <div class="ob-feature"><div class="ob-feature-icon" style="background:var(--bl2);">📄</div><div><div style="font-weight:600;font-size:.82rem;margin-bottom:2px;">Presupuestos</div><div style="font-size:.72rem;color:var(--t2);">Con cálculo de margen y exportación PDF</div></div></div>
+      <div class="ob-feature"><div class="ob-feature-icon" style="background:var(--gn2);">📦</div><div><div style="font-weight:600;font-size:.82rem;margin-bottom:2px;">Artículos & Pedidos</div><div style="font-size:.72rem;color:var(--t2);">Catálogo con comparativa de precios</div></div></div>
+      <div class="ob-feature"><div class="ob-feature-icon" style="background:var(--pu2);">🤖</div><div><div style="font-weight:600;font-size:.82rem;margin-bottom:2px;">Asistente IA</div><div style="font-size:.72rem;color:var(--t2);">Responde preguntas sobre tus datos</div></div></div>
+      <div class="ob-feature"><div class="ob-feature-icon" style="background:var(--am2);">🔔</div><div><div style="font-weight:600;font-size:.82rem;margin-bottom:2px;">Alertas automáticas</div><div style="font-size:.72rem;color:var(--t2);">Rappel, scoring bajo, sin pedidos</div></div></div>
+      <div class="ob-feature"><div class="ob-feature-icon" style="background:var(--tl2);">📓</div><div><div style="font-weight:600;font-size:.82rem;margin-bottom:2px;">Diario comercial</div><div style="font-size:.72rem;color:var(--t2);">Notas y recordatorios por proveedor</div></div></div>
+    </div>`
+  },
+  // Step 1 — Añadir primer proveedor
+  {
+    num:'1',
+    title:'Añade tu primer proveedor',
+    sub:'Empieza con los proveedores que más usas. Puedes importarlos desde Excel o añadirlos uno a uno.',
+    render:()=>`
+    <div style="display:flex;flex-direction:column;gap:.875rem;">
+      <div style="background:var(--bg3);border-radius:var(--r);padding:1.25rem;border:1px solid var(--b);">
+        <div style="font-size:.82rem;color:var(--t2);margin-bottom:.875rem;line-height:1.6;">Por cada proveedor guarda: nombre, categoría, margen, descuento, rappel, pedido mínimo, forma de pago, tiempo de entrega y valoraciones. El <strong>score</strong> se calcula automáticamente.</div>
+        <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+          <button class="btn bn-gold" onclick="skipOnboarding();goTo('proveedores');setTimeout(()=>openProvForm(null),100);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Añadir proveedor ahora
+          </button>
+          <button class="btn bn-surf" onclick="skipOnboarding();openImportExcel();">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Importar desde Excel
+          </button>
+        </div>
+      </div>
+      <div style="font-size:.75rem;color:var(--t3);display:flex;align-items:flex-start;gap:8px;">
+        <span style="font-size:1rem;">💡</span>
+        <span>Empieza con <strong style="color:var(--t2);">5-10 proveedores clave</strong>. No hace falta meterlos todos de golpe — puedes añadir más en cualquier momento desde el menú lateral.</span>
+      </div>
+    </div>`
+  },
+  // Step 2 — Catálogo de artículos
+  {
+    num:'2',
+    title:'Crea tu catálogo de artículos',
+    sub:'Los artículos son la clave para hacer pedidos y presupuestos rápido sin errores de escritura.',
+    render:()=>`
+    <div style="display:flex;flex-direction:column;gap:.875rem;">
+      <div style="background:var(--bg3);border-radius:var(--r);padding:1.25rem;border:1px solid var(--b);">
+        <div style="font-size:.82rem;color:var(--t2);margin-bottom:.875rem;line-height:1.6;">Cada artículo tiene nombre, referencia, precio por proveedor y unidad. Si el mismo artículo lo tienen varios proveedores, la app te muestra <strong>quién lo tiene más barato</strong> automáticamente.</div>
+        <div style="background:var(--s2);border-radius:var(--r2);padding:.75rem;margin-bottom:.875rem;">
+          <div style="font-size:.7rem;color:var(--t3);margin-bottom:.375rem;">Ejemplo de artículo en el catálogo:</div>
+          <div style="display:flex;align-items:center;gap:.875rem;">
+            <div style="flex:1;"><div style="font-weight:600;font-size:.82rem;">Tornillo M6×20 inox A2</div><div style="font-size:.7rem;color:var(--t3);">Ref: TM6-20-A2 · Tornillería</div></div>
+            <div style="display:flex;gap:.5rem;">
+              <div style="text-align:center;background:var(--gn2);border-radius:5px;padding:.375rem .625rem;"><div style="font-size:.65rem;color:var(--green);">Tornipro</div><div style="font-weight:700;color:var(--green);font-family:var(--mono);">0,08€</div></div>
+              <div style="text-align:center;background:var(--bg3);border-radius:5px;padding:.375rem .625rem;"><div style="font-size:.65rem;color:var(--t3);">Gómez</div><div style="font-weight:700;font-family:var(--mono);">0,11€</div></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn bn-gold" onclick="skipOnboarding();goTo('articulos');setTimeout(()=>openArticuloForm(null),100);">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Añadir primer artículo
+        </button>
+      </div>
+      <div style="font-size:.75rem;color:var(--t3);display:flex;align-items:flex-start;gap:8px;">
+        <span style="font-size:1rem;">💡</span>
+        <span>Al hacer un pedido o presupuesto, seleccionas el artículo y <strong style="color:var(--t2);">el precio se rellena solo</strong>. Sin buscar tarifas, sin errores.</span>
+      </div>
+    </div>`
+  },
+  // Step 3 — Primer pedido o presupuesto
+  {
+    num:'3',
+    title:'Registra pedidos y crea presupuestos',
+    sub:'El botón + flotante es tu acceso rápido. Úsalo desde cualquier pantalla para registrar un pedido en segundos.',
+    render:()=>`
+    <div style="display:flex;flex-direction:column;gap:.875rem;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem;">
+        <div style="background:var(--bg3);border-radius:var(--r2);padding:1rem;border:1px solid var(--b);">
+          <div style="font-size:1.5rem;margin-bottom:.5rem;">⚡</div>
+          <div style="font-weight:700;font-size:.85rem;margin-bottom:.375rem;">Pedido rápido</div>
+          <div style="font-size:.75rem;color:var(--t2);line-height:1.5;margin-bottom:.75rem;">Selecciona proveedor, añade artículos con precio y cantidad. El total se calcula al momento.</div>
+          <button class="btn bn-gold btn-sm" onclick="skipOnboarding();openPedRapido();">Probar ahora</button>
+        </div>
+        <div style="background:var(--bg3);border-radius:var(--r2);padding:1rem;border:1px solid var(--b);">
+          <div style="font-size:1.5rem;margin-bottom:.5rem;">📄</div>
+          <div style="font-weight:700;font-size:.85rem;margin-bottom:.375rem;">Presupuesto</div>
+          <div style="font-size:.75rem;color:var(--t2);line-height:1.5;margin-bottom:.75rem;">Crea presupuestos con margen automático y expórtalos en PDF con tu membrete.</div>
+          <button class="btn bn-surf btn-sm" onclick="skipOnboarding();goTo('presupuestos');setTimeout(()=>openPresupuestoForm(null),100);">Crear presupuesto</button>
+        </div>
+      </div>
+      <div style="background:var(--g4);border:1px solid rgba(232,160,32,.2);border-radius:var(--r2);padding:.875rem;display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:1.1rem;flex-shrink:0;">🎯</span>
+        <div style="font-size:.78rem;color:var(--t2);line-height:1.6;">
+          <strong style="color:var(--gold);">Consejo:</strong> El botón <strong>+</strong> flotante abajo a la derecha siempre está disponible. Úsalo para registrar pedidos al instante mientras hablas por teléfono.
+        </div>
+      </div>
+    </div>`
+  },
+  // Step 4 — IA y todo listo
+  {
+    num:'🚀',
+    title:'Todo listo. Un último consejo.',
+    sub:'El Asistente IA puede responder cualquier pregunta sobre tus datos en lenguaje natural.',
+    render:()=>`
+    <div style="display:flex;flex-direction:column;gap:.875rem;">
+      <div style="background:var(--pu2);border:1px solid rgba(138,92,245,.25);border-radius:var(--r);padding:1.25rem;">
+        <div style="font-size:.82rem;color:var(--t2);margin-bottom:.75rem;line-height:1.6;">Con la <strong style="color:var(--purple);">clave API de Anthropic</strong> activada, puedes preguntarle cosas como:</div>
+        <div style="display:flex;flex-direction:column;gap:.375rem;">
+          ${['¿Qué proveedor me deja más margen en tornillería?','¿Cuánto he gastado este año con Tornipro?','Redacta un email para negociar el rappel con Pinturas Levante','¿Qué proveedores tienen incidencias recientes?'].map(q=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:.5rem .75rem;background:rgba(138,92,245,.08);border-radius:6px;">
+            <span style="color:var(--purple);font-size:.85rem;">💬</span>
+            <span style="font-size:.78rem;color:var(--t2);">${q}</span>
+          </div>`).join('')}
+        </div>
+        <div style="margin-top:.875rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+          <button class="btn bn-ai btn-sm" onclick="skipOnboarding();goTo('asistente');">Ir al Asistente IA</button>
+          <span style="font-size:.7rem;color:var(--t3);">O configura la clave en el chat → "Configurar"</span>
+        </div>
+      </div>
+      <div style="background:var(--gn2);border:1px solid rgba(30,201,122,.25);border-radius:var(--r2);padding:.875rem;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.3rem;">✅</span>
+        <div><div style="font-weight:600;font-size:.85rem;color:var(--green);">Todo está configurado</div><div style="font-size:.75rem;color:var(--t2);margin-top:2px;">Los datos se sincronizan automáticamente en todos tus dispositivos en tiempo real.</div></div>
+      </div>
+    </div>`
+  }
+];
+
+function showOnboarding(){
+  obStep=0;
+  ge('ob-overlay').style.display='flex';
+  renderObStep();
+}
+
+function renderObStep(){
+  const step=OB_CONTENT[obStep];
+  const total=OB_CONTENT.length;
+  const pct=Math.round((obStep/(total-1))*100);
+
+  // Progress bar
+  const prog=ge('ob-prog');
+  if(prog)prog.style.width=pct+'%';
+
+  // Dots
+  const dots=ge('ob-dots');
+  if(dots)dots.innerHTML=OB_CONTENT.map((_,i)=>`<div class="ob-dot ${i===obStep?'active':''}"></div>`).join('');
+
+  // Next button label
+  const btn=ge('ob-next');
+  if(btn)btn.textContent=obStep===total-1?'¡Empezar! →':'Siguiente →';
+
+  // Content
+  const cont=ge('ob-content');
+  if(cont)cont.innerHTML=`
+  <div class="ob-header">
+    <div class="ob-step-num">${step.num}</div>
+    <div class="ob-title">${step.title}</div>
+    <div class="ob-sub">${step.sub}</div>
+  </div>
+  <div class="ob-body">${step.render()}</div>`;
+}
+
+function obNext(){
+  if(obStep<OB_CONTENT.length-1){
+    obStep++;
+    renderObStep();
+  } else {
+    finishOnboarding();
+  }
+}
+
+function finishOnboarding(){
+  localStorage.setItem('macor_ob_done','1');
+  const el=ge('ob-overlay');
+  if(el){el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>{el.style.display='none';el.style.opacity='';},300);}
+  goTo('dashboard');
+  // Show a welcome toast
+  setTimeout(()=>toast('¡Bienvenido! Empieza añadiendo tu primer proveedor 🚀','ok'),400);
+}
+
+function skipOnboarding(){
+  localStorage.setItem('macor_ob_done','1');
+  const el=ge('ob-overlay');
+  if(el){el.style.display='none';}
+}
+
+// Allow resetting onboarding from settings (useful for testing)
+function resetOnboarding(){
+  localStorage.removeItem('macor_ob_done');
+  obStep=0;
+  showOnboarding();
 }
 
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
