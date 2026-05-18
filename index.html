@@ -1800,6 +1800,31 @@ function exportarPDF(view){
     <table><tr><th>Fecha</th><th>Proveedor</th><th>Producto</th><th>Importe</th></tr>
     ${list.map(p=>{const pv=proveedores.find(x=>x.id===p.proveedorId);return`<tr><td>${fmtDate(p.fecha)}</td><td>${esc(pv?.nombre||'—')}</td><td>${esc(p.producto||'—')}</td><td><strong>${fmt(p.importe||0)}</strong></td></tr>`;}).join('')}
     </table>`;
+  } else if(view==='comparar'){
+    const sel=proveedores.filter(p=>cmpIds.has(p.id)).map(p=>({...p,_sc:sc(p)}));
+    if(sel.length<2){toast('Selecciona al menos 2 proveedores para exportar','err');return;}
+    const rows=[
+      {l:'Score',k:'_sc',f:v=>v+'/100'},
+      {l:'Margen (%)',k:'margen',f:v=>v!=null?v+'%':'—'},
+      {l:'Entrega (días)',k:'entrega',f:v=>v!=null?v+'d':'—'},
+      {l:'Fiabilidad',k:'fiabilidad',f:v=>v!=null?v+'/10':'—'},
+      {l:'Calidad',k:'calidad',f:v=>v!=null?v+'/10':'—'},
+      {l:'Descuento (%)',k:'descuento',f:v=>v!=null?v+'%':'—'},
+      {l:'Rappel (%)',k:'rappel',f:v=>v!=null?v+'%':'—'},
+      {l:'Pedido mínimo',k:'pedidoMin',f:v=>v!=null?v+'€':'—'},
+      {l:'Forma de pago',k:'pago',f:v=>v||'—'},
+    ];
+    html+=`<table><tr><th>Criterio</th>${sel.map(p=>`<th>${esc(p.nombre)}</th>`).join('')}</tr>
+    ${rows.map(r=>`<tr><td>${r.l}</td>${sel.map(p=>{ const v=p[r.k]; const vals=sel.map(x=>parseFloat(x[r.k])).filter(n=>!isNaN(n)); const best=vals.length?Math.max(...vals):null; return`<td${v!=null&&parseFloat(v)===best?' style="font-weight:700;color:#1a7a4a;"':''}>${r.f(v)}</td>`; }).join('')}</tr>`).join('')}
+    </table>`;
+  } else if(view==='presupuestos'){
+    html+=`<table><tr><th>Nº</th><th>Título</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Margen</th><th>Estado</th></tr>
+    ${presupuestos.map(p=>{const cl=clientes_v.find(x=>x.id===p.clienteId);return`<tr><td>${esc(p.numero||'—')}</td><td>${esc(p.titulo||'—')}</td><td>${cl?esc(cl.nombre||cl.empresa||''):'—'}</td><td>${fmtDate(p.fecha)}</td><td style="font-weight:600;">${fmt(p.total||0)}</td><td>${calcMargenPres(p)}%</td><td>${p.estado||'—'}</td></tr>`;}).join('')}
+    </table>`;
+  } else if(view==='articulos'){
+    html+=`<table><tr><th>Artículo</th><th>Referencia</th><th>Categoría</th><th>Proveedor</th><th>Precio</th><th>Unidad</th></tr>
+    ${productos.sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(p=>{const prov=proveedores.find(x=>x.id===p.proveedorId);return`<tr><td>${esc(p.nombre)}</td><td style="font-family:monospace;">${esc(p.referencia||'—')}</td><td>${esc(p.categoria||'—')}</td><td>${prov?esc(prov.nombre):'—'}</td><td style="font-weight:600;">${p.precio!=null?fmt(p.precio):'—'}</td><td>${esc(p.unidad||'ud')}</td></tr>`;}).join('')}
+    </table>`;
   } else if(view==='estadisticas'){
     const activos=proveedores.filter(p=>(p.estado||'activo')==='activo');
     const avgSc=activos.length?Math.round(activos.map(p=>sc(p)).reduce((a,b)=>a+b,0)/activos.length):0;
@@ -1854,7 +1879,7 @@ async function delDoc(col,id){
 function showModal(html,size){
   const b=ge('mbox');b.className='modal'+(size==='xl'?' xl':size==='sm'?' sm':'');b.innerHTML=html;ge('ovl').classList.add('open');
 }
-function closeModal(){ge('ovl').classList.remove('open');}
+function closeModal(){ge('ovl').classList.remove('open');resumeOnboarding();}
 ge('ovl').addEventListener('click',e=>{if(e.target===ge('ovl'))closeModal();});
 
 // ══════════ TOAST ══════════
@@ -3279,11 +3304,11 @@ const OB_CONTENT = [
       <div style="background:var(--bg3);border-radius:var(--r);padding:1.25rem;border:1px solid var(--b);">
         <div style="font-size:.82rem;color:var(--t2);margin-bottom:.875rem;line-height:1.6;">Por cada proveedor guarda: nombre, categoría, margen, descuento, rappel, pedido mínimo, forma de pago, tiempo de entrega y valoraciones. El <strong>score</strong> se calcula automáticamente.</div>
         <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
-          <button class="btn bn-gold" onclick="skipOnboarding();goTo('proveedores');setTimeout(()=>openProvForm(null),100);">
+          <button class="btn bn-gold" onclick="obAction(()=>{goTo('proveedores');setTimeout(()=>openProvForm(null),100);})">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
             Añadir proveedor ahora
           </button>
-          <button class="btn bn-surf" onclick="skipOnboarding();openImportExcel();">
+          <button class="btn bn-surf" onclick="obAction(()=>openImportExcel())">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             Importar desde Excel
           </button>
@@ -3314,7 +3339,7 @@ const OB_CONTENT = [
             </div>
           </div>
         </div>
-        <button class="btn bn-gold" onclick="skipOnboarding();goTo('articulos');setTimeout(()=>openArticuloForm(null),100);">
+        <button class="btn bn-gold" onclick="obAction(()=>{goTo('articulos');setTimeout(()=>openArticuloForm(null),100);})">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           Añadir primer artículo
         </button>
@@ -3337,13 +3362,13 @@ const OB_CONTENT = [
           <div style="font-size:1.5rem;margin-bottom:.5rem;">⚡</div>
           <div style="font-weight:700;font-size:.85rem;margin-bottom:.375rem;">Pedido rápido</div>
           <div style="font-size:.75rem;color:var(--t2);line-height:1.5;margin-bottom:.75rem;">Selecciona proveedor, añade artículos con precio y cantidad. El total se calcula al momento.</div>
-          <button class="btn bn-gold btn-sm" onclick="skipOnboarding();openPedRapido();">Probar ahora</button>
+          <button class="btn bn-gold btn-sm" onclick="obAction(()=>openPedRapido())">Probar ahora</button>
         </div>
         <div style="background:var(--bg3);border-radius:var(--r2);padding:1rem;border:1px solid var(--b);">
           <div style="font-size:1.5rem;margin-bottom:.5rem;">📄</div>
           <div style="font-weight:700;font-size:.85rem;margin-bottom:.375rem;">Presupuesto</div>
           <div style="font-size:.75rem;color:var(--t2);line-height:1.5;margin-bottom:.75rem;">Crea presupuestos con margen automático y expórtalos en PDF con tu membrete.</div>
-          <button class="btn bn-surf btn-sm" onclick="skipOnboarding();goTo('presupuestos');setTimeout(()=>openPresupuestoForm(null),100);">Crear presupuesto</button>
+          <button class="btn bn-surf btn-sm" onclick="obAction(()=>{goTo('presupuestos');setTimeout(()=>openPresupuestoForm(null),100);})">Crear presupuesto</button>
         </div>
       </div>
       <div style="background:var(--g4);border:1px solid rgba(232,160,32,.2);border-radius:var(--r2);padding:.875rem;display:flex;align-items:flex-start;gap:10px;">
@@ -3359,29 +3384,39 @@ const OB_CONTENT = [
     num:'🚀',
     title:'Todo listo. Un último consejo.',
     sub:'El Asistente IA puede responder cualquier pregunta sobre tus datos en lenguaje natural.',
-    render:()=>`
-    <div style="display:flex;flex-direction:column;gap:.875rem;">
+    render:()=>{
+      const qs=['¿Qué proveedor me deja más margen en tornillería?','¿Cuánto he gastado este año con Tornipro?','Redacta un email para negociar el rappel con Pinturas Levante','¿Qué proveedores tienen incidencias recientes?'];
+      const qHtml=qs.map(q=>`<div style="display:flex;align-items:center;gap:8px;padding:.5rem .75rem;background:rgba(138,92,245,.08);border-radius:6px;"><span style="color:var(--purple);font-size:.85rem;">💬</span><span style="font-size:.78rem;color:var(--t2);">${q}</span></div>`).join('');
+      return `<div style="display:flex;flex-direction:column;gap:.875rem;">
       <div style="background:var(--pu2);border:1px solid rgba(138,92,245,.25);border-radius:var(--r);padding:1.25rem;">
-        <div style="font-size:.82rem;color:var(--t2);margin-bottom:.75rem;line-height:1.6;">Con la <strong style="color:var(--purple);">clave API de Anthropic</strong> activada, puedes preguntarle cosas como:</div>
-        <div style="display:flex;flex-direction:column;gap:.375rem;">
-          ${['¿Qué proveedor me deja más margen en tornillería?','¿Cuánto he gastado este año con Tornipro?','Redacta un email para negociar el rappel con Pinturas Levante','¿Qué proveedores tienen incidencias recientes?'].map(q=>`
-          <div style="display:flex;align-items:center;gap:8px;padding:.5rem .75rem;background:rgba(138,92,245,.08);border-radius:6px;">
-            <span style="color:var(--purple);font-size:.85rem;">💬</span>
-            <span style="font-size:.78rem;color:var(--t2);">${q}</span>
-          </div>`).join('')}
-        </div>
+        <div style="font-size:.82rem;color:var(--t2);margin-bottom:.75rem;line-height:1.6;">Con la <strong style="color:var(--purple);">clave API de Anthropic</strong> activada (opcional, muy económica), puedes preguntar:</div>
+        <div style="display:flex;flex-direction:column;gap:.375rem;">${qHtml}</div>
         <div style="margin-top:.875rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
-          <button class="btn bn-ai btn-sm" onclick="skipOnboarding();goTo('asistente');">Ir al Asistente IA</button>
-          <span style="font-size:.7rem;color:var(--t3);">O configura la clave en el chat → "Configurar"</span>
+          <button class="btn bn-ai btn-sm" onclick="obAction(()=>goTo('asistente'))">Ir al Asistente IA</button>
+          <span style="font-size:.7rem;color:var(--t3);">La clave se configura en el chat → botón "Configurar"</span>
         </div>
       </div>
       <div style="background:var(--gn2);border:1px solid rgba(30,201,122,.25);border-radius:var(--r2);padding:.875rem;display:flex;align-items:center;gap:10px;">
         <span style="font-size:1.3rem;">✅</span>
-        <div><div style="font-weight:600;font-size:.85rem;color:var(--green);">Todo está configurado</div><div style="font-size:.75rem;color:var(--t2);margin-top:2px;">Los datos se sincronizan automáticamente en todos tus dispositivos en tiempo real.</div></div>
+        <div><div style="font-weight:600;font-size:.85rem;color:var(--green);">Todo está configurado y listo</div><div style="font-size:.75rem;color:var(--t2);margin-top:2px;">Tus datos se sincronizan en tiempo real en todos tus dispositivos.</div></div>
       </div>
-    </div>`
+    </div>`;
+    }
   }
 ];
+
+function obAction(fn){
+  const el=ge('ob-overlay');
+  if(el){el.style.opacity='0';el.style.transition='opacity .2s';setTimeout(()=>{el.style.display='none';el.style.opacity='';el.style.transition='';},200);}
+  setTimeout(()=>{if(typeof fn==='function')fn();},250);
+}
+
+function resumeOnboarding(){
+  if(!localStorage.getItem('macor_ob_done')){
+    const el=ge('ob-overlay');
+    if(el&&el.style.display==='none'){el.style.display='flex';renderObStep();}
+  }
+}
 
 function showOnboarding(){
   obStep=0;
@@ -3393,37 +3428,18 @@ function renderObStep(){
   const step=OB_CONTENT[obStep];
   const total=OB_CONTENT.length;
   const pct=Math.round((obStep/(total-1))*100);
-
-  // Progress bar
-  const prog=ge('ob-prog');
-  if(prog)prog.style.width=pct+'%';
-
-  // Dots
+  const prog=ge('ob-prog');if(prog)prog.style.width=pct+'%';
   const dots=ge('ob-dots');
-  if(dots)dots.innerHTML=OB_CONTENT.map((_,i)=>`<div class="ob-dot ${i===obStep?'active':''}"></div>`).join('');
-
-  // Next button label
+  if(dots)dots.innerHTML=OB_CONTENT.map((_,i)=>'<div class="ob-dot '+(i===obStep?'active':'')+'"></div>').join('');
   const btn=ge('ob-next');
-  if(btn)btn.textContent=obStep===total-1?'¡Empezar! →':'Siguiente →';
-
-  // Content
+  if(btn)btn.textContent=obStep===total-1?'Empezar la app →':'Siguiente →';
   const cont=ge('ob-content');
-  if(cont)cont.innerHTML=`
-  <div class="ob-header">
-    <div class="ob-step-num">${step.num}</div>
-    <div class="ob-title">${step.title}</div>
-    <div class="ob-sub">${step.sub}</div>
-  </div>
-  <div class="ob-body">${step.render()}</div>`;
+  if(cont)cont.innerHTML='<div class="ob-header"><div class="ob-step-num">'+step.num+'</div><div class="ob-title">'+step.title+'</div><div class="ob-sub">'+step.sub+'</div></div><div class="ob-body">'+(typeof step.render==='function'?step.render():'')+'</div>';
 }
 
 function obNext(){
-  if(obStep<OB_CONTENT.length-1){
-    obStep++;
-    renderObStep();
-  } else {
-    finishOnboarding();
-  }
+  if(obStep<OB_CONTENT.length-1){obStep++;renderObStep();}
+  else{finishOnboarding();}
 }
 
 function finishOnboarding(){
@@ -3431,23 +3447,17 @@ function finishOnboarding(){
   const el=ge('ob-overlay');
   if(el){el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>{el.style.display='none';el.style.opacity='';},300);}
   goTo('dashboard');
-  // Show a welcome toast
-  setTimeout(()=>toast('¡Bienvenido! Empieza añadiendo tu primer proveedor 🚀','ok'),400);
+  setTimeout(()=>toast('Bienvenido. Empieza añadiendo tu primer proveedor','ok'),400);
 }
 
 function skipOnboarding(){
   localStorage.setItem('macor_ob_done','1');
-  const el=ge('ob-overlay');
-  if(el){el.style.display='none';}
+  const el=ge('ob-overlay');if(el)el.style.display='none';
 }
 
-// Allow resetting onboarding from settings (useful for testing)
 function resetOnboarding(){
-  localStorage.removeItem('macor_ob_done');
-  obStep=0;
-  showOnboarding();
+  localStorage.removeItem('macor_ob_done');obStep=0;showOnboarding();
 }
-
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 </script>
 </body>
